@@ -1,4 +1,4 @@
 export const seoConfig = {
-  googleSiteVerification: 'abc123XYZ',
-  enableGoogleSiteVerification: 'false',
+  googleSiteVerification: '',
+  enableGoogleSiteVerification: 'false'
 };

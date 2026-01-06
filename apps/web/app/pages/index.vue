@@ -42,4 +42,20 @@ setRobotForStaticPage('Homepage');
 
 const { setBlocksListContext } = useBlocksList();
 setBlocksListContext('content');
+const runtimeConfig = useRuntimeConfig();
+
+const googleVerification = String(
+  runtimeConfig.public.googleSiteVerification || ''
+);
+
+if (googleVerification) {
+  useHead({
+    meta: [
+      {
+        name: 'google-site-verification',
+        content: googleVerification,
+      },
+    ],
+  });
+}
 </script>
