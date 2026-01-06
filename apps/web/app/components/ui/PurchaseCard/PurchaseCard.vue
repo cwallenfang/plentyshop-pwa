@@ -1,12 +1,15 @@
 <template>
   <form
     class="md:rounded-md"
-    :class="{ 'md:shadow-lg': configuration?.dropShadow, 'md:border md:border-neutral-100': configuration?.borders }"
+    :class="{
+      'md:shadow-lg': configuration?.dropShadow,
+      'md:border md:border-neutral-100 sticky': configuration?.borders,
+    }"
     :style="inlineStyle"
     data-testid="purchase-card"
     @submit.prevent="handleAddToCart()"
   >
-    <div class="relative">
+    <div class="sticky">
       <div class="drift-zoom-image">
         <section class="p-4 xl:p-6">
           <template v-for="key in configuration?.fieldsOrder" :key="key">
@@ -35,36 +38,47 @@
                 :unit-name="productGetters.getUnitName(product)"
               />
             </template>
-            <template v-if="key === 'tags' && configuration?.fields.tags">
+            <template v-if="key === 'tags' && configuration?.fields.tags && false">
               <UiBadges class="mb-2" :product="product" :use-availability="false" :use-tags="true" />
             </template>
             <template v-if="key === 'availability' && configuration?.fields.availability">
               <UiBadges class="mb-2" :product="product" :use-availability="true" :use-tags="false" />
             </template>
-            <template v-if="key === 'variationProperties' && configuration?.fields.variationProperties">
+            <template v-if="key === 'variationProperties' && configuration?.fields.variationProperties && 0">
               <div class="mb-2 variation-properties">
                 <VariationProperties :product="product" />
               </div>
             </template>
             <template v-if="key === 'starRating' && configuration?.fields.starRating">
-              <div class="inline-flex items-center mb-2">
-                <SfRating
-                  size="xs"
-                  :half-increment="true"
-                  :value="reviewGetters.getAverageRating(reviewAverage, 'half')"
-                  :max="5"
-                />
-                <SfCounter class="ml-1" size="xs">{{ reviewGetters.getTotalReviews(reviewAverage) }}</SfCounter>
-                <UiButton
-                  variant="tertiary"
-                  class="ml-2 text-xs text-neutral-500 cursor-pointer"
-                  data-testid="show-reviews"
-                  @click="scrollToReviews"
-                >
-                  {{ t('product.showAllReviews') }}
-                </UiButton>
+              <div class="flex mb-2 items-center justify-between">
+                <div class="inline-flex items-center">
+                  <SfRating
+                    size="xs"
+                    :half-increment="true"
+                    :value="reviewGetters.getAverageRating(reviewAverage, 'half')"
+                    :max="5"
+                  />
+                  <SfCounter class="ml-1" size="xs">{{ reviewGetters.getTotalReviews(reviewAverage) }}</SfCounter>
+                  <UiButton
+                    variant="tertiary"
+                    class="ml-2 text-xs text-neutral-500 cursor-pointer"
+                    data-testid="show-reviews"
+                    @click="scrollToReviews"
+                  >
+                    {{ t('product.showAllReviews') }}
+                  </UiButton>
+                </div>
+                <div class="text-xs text-righte">Artikelnummer {{ productGetters.getId(product) }}</div>
               </div>
             </template>
+            <template v-if="key === 'bulletPoints' && configuration?.fields.bulletPoints">
+              <VariationBulletPoints
+                :product="product"
+                :language="'de'"
+                :fallback="productGetters.getTechnicalData(product)"
+              />
+            </template>
+
             <template v-if="key === 'previewText' && configuration?.fields.previewText">
               <div
                 v-if="productGetters.getShortDescription(product).length > 0"
@@ -228,14 +242,15 @@ const props = withDefaults(defineProps<PurchaseCardProps>(), {
     fields: {
       itemName: true,
       price: true,
-      tags: true,
+      tags: false,
       availability: true,
       starRating: true,
+      bulletPoints: true,
       orderProperties: true,
-      variationProperties: true,
+      variationProperties: false,
       previewText: true,
       attributes: true,
-      itemBundle: false,
+      itemBundle: true,
       graduatedPrices: true,
       addToWishlist: true,
       quantityAndAddToCart: true,
@@ -244,10 +259,11 @@ const props = withDefaults(defineProps<PurchaseCardProps>(), {
     },
     fieldsOrder: [
       'itemName',
+      'starRating',
+      'bulletPoints',
       'price',
       'tags',
       'availability',
-      'starRating',
       'variationProperties',
       'orderProperties',
       'previewText',
