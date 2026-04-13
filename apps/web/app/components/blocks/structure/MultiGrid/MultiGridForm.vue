@@ -1,5 +1,5 @@
 <template>
-  <div class="sticky top-[52px] h-[calc(100vh-52px)] overflow-y-auto">
+  <div class="sticky h-[calc(100vh-52px)] overflow-y-auto">
     <UiAccordionItem
       v-model="textSettings"
       data-testid="open-layout-settings"
@@ -21,7 +21,7 @@
 
         <div v-if="multiGridStructure.configuration.layout" class="py-2">
           <UiFormLabel>{{ getEditorTranslation('margin-label') }}</UiFormLabel>
-          <div class="grid grid-cols-4 gap-px rounded-md overflow-hidden border border-gray-300">
+          <div class="grid grid-cols-2 gap-px rounded-md overflow-hidden border border-gray-300">
             <div class="flex items-center justify-center gap-1 px-2 py-1 bg-white border-r">
               <span><SfIconArrowUpward /></span>
               <input
@@ -38,24 +38,6 @@
                 type="number"
                 class="w-12 text-center outline-none"
                 data-testid="margin-bottom"
-              />
-            </div>
-            <div class="flex items-center justify-center gap-1 px-2 py-1 bg-white border-r">
-              <span><SfIconArrowBack /></span>
-              <input
-                v-model.number="multiGridStructure.configuration.layout.marginLeft"
-                type="number"
-                class="w-12 text-center outline-none"
-                data-testid="margin-left"
-              />
-            </div>
-            <div class="flex items-center justify-center gap-1 px-2 py-1 bg-white">
-              <span><SfIconArrowForward /></span>
-              <input
-                v-model.number="multiGridStructure.configuration.layout.marginRight"
-                type="number"
-                class="w-12 text-center outline-none"
-                data-testid="margin-right"
               />
             </div>
           </div>
@@ -103,6 +85,7 @@
           </button>
         </div>
       </div>
+      <EditorFullWidthToggle v-model="isFullWidth" :block-uuid="blockUuid" />
     </UiAccordionItem>
 
     <UiAccordionItem
@@ -119,29 +102,27 @@
         <div class="flex justify-between mb-2">
           <UiFormLabel>{{ getEditorTranslation('background-color-label') }}</UiFormLabel>
         </div>
-        <label>
-          <SfInput
-            v-model="multiGridStructure.configuration.layout.backgroundColor"
-            type="text"
-            data-testid="input-background-color"
-          >
-            <template #suffix>
-              <label
-                for="background-color"
-                :style="{ backgroundColor: multiGridStructure.configuration.layout.backgroundColor || '#ffffff' }"
-                class="border border-[#a0a0a0] rounded-lg cursor-pointer"
+        <EditorColorPicker v-model="multiGridStructure.configuration.layout.backgroundColor" class="w-full">
+          <template #trigger="{ color, toggle }">
+            <label>
+              <SfInput
+                v-model="multiGridStructure.configuration.layout.backgroundColor"
+                type="text"
+                data-testid="input-background-color"
               >
-                <input
-                  id="background-color"
-                  v-model="multiGridStructure.configuration.layout.backgroundColor"
-                  data-testid="color-input-background"
-                  type="color"
-                  class="invisible w-8"
-                />
-              </label>
-            </template>
-          </SfInput>
-        </label>
+                <template #suffix>
+                  <button
+                    type="button"
+                    class="border border-[#a0a0a0] rounded-lg cursor-pointer w-10 h-8"
+                    :style="{ backgroundColor: color }"
+                    @mousedown.stop
+                    @click.stop="toggle"
+                  />
+                </template>
+              </SfInput>
+            </label>
+          </template>
+        </EditorColorPicker>
       </div>
     </UiAccordionItem>
   </div>
@@ -149,43 +130,22 @@
 
 <script setup lang="ts">
 import type { ColumnBlock } from '~/components/blocks/structure/MultiGrid/types';
-import {
-  SfInput,
-  SfIconArrowUpward,
-  SfIconArrowDownward,
-  SfIconArrowBack,
-  SfIconArrowForward,
-} from '@storefront-ui/vue';
+import { SfInput, SfIconArrowUpward, SfIconArrowDownward } from '@storefront-ui/vue';
 import ColumnWidthInput from '~/components/editor/ColumnWidthInput.vue';
 
 const { blockUuid } = useSiteConfiguration();
 const route = useRoute();
-const { data } = useCategoryTemplate(
+const { data } = useBlockTemplates(
   route?.meta?.identifier as string,
   route.meta.type as string,
   useNuxtApp().$i18n.locale.value,
 );
 const { findOrDeleteBlockByUuid } = useBlockManager();
-const { getSetting: getBlockSize } = useSiteSettings('blockSize');
+const { getSetting: getBlockSize } = useSiteSettings('verticalBlockSize');
 const blockSize = computed(() => getBlockSize());
-
+const defaultMarginBottom = computed(() => getVerticalPixels(blockSize.value));
 const isTwoColumnMultigrid = computed(() => {
   return multiGridStructure.value.configuration?.columnWidths?.length === 2;
-});
-
-const defaultMarginBottom = computed(() => {
-  switch (blockSize.value) {
-    case 's':
-      return 30;
-    case 'm':
-      return 40;
-    case 'l':
-      return 50;
-    case 'xl':
-      return 60;
-    default:
-      return 0;
-  }
 });
 
 const multiGridStructure = computed(() => {
@@ -194,8 +154,6 @@ const multiGridStructure = computed(() => {
     block.configuration.layout = {
       marginTop: 0,
       marginBottom: defaultMarginBottom.value,
-      marginLeft: 40,
-      marginRight: 40,
       backgroundColor: '#ffffff',
       gap: 'M',
     };
@@ -208,6 +166,8 @@ const multiGridStructure = computed(() => {
   }
   return block;
 });
+
+const { isFullWidth } = useFullWidthToggleForConfig(computed(() => multiGridStructure.value.configuration));
 
 const gapOptions = ['None', 'S', 'M', 'L', 'XL'];
 const gapBtnClasses =

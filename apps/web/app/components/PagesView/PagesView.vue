@@ -1,5 +1,5 @@
 <template>
-  <div class="pages-view sticky top-[52px] z-[2]" data-testid="pages-management-drawer">
+  <div class="pages-view sticky z-[2]" data-testid="pages-management-drawer">
     <header class="flex items-center justify-between px-4 py-5 border-b">
       <div class="flex items-center text-xl font-bold">
         {{ getEditorTranslation('label') }}
@@ -13,7 +13,7 @@
         >
           <SfIconHelp class="cursor-pointer" @click="openHelpPage" />
         </SfTooltip>
-        <button data-testid="pages-view-close" class="!p-0" @click="closeDrawer">
+        <button data-testid="pages-view-close" class="!p-0" @click="closeSiteConfigurationDrawer">
           <SfIconClose />
         </button>
       </div>
@@ -85,14 +85,19 @@
           @scroll="(e: Event) => handleScroll(e, 'content')"
         >
           <ul class="rounded-lg">
-            <PagesItem
+            <PagesViewPagesItem
               :key="locale"
               :item="homepageItem"
               :parent-id="undefined"
               :icon="SfIconHome"
               :hide-settings="true"
             />
-            <PagesItem v-for="item in contentItems" :key="`${item.id}-${locale}`" :item="item" :parent-id="item.id" />
+            <PagesViewPagesItem
+              v-for="item in contentItems"
+              :key="`${item.id}-${locale}`"
+              :item="item"
+              :parent-id="item.id"
+            />
             <li v-if="loadingContent" class="flex justify-center items-center py-4">
               <SfLoaderCircular size="sm" />
             </li>
@@ -115,20 +120,21 @@
           @scroll="(e: Event) => handleScroll(e, 'item')"
         >
           <ul class="rounded-lg">
-            <PagesItem v-for="item in itemItems" :key="item.id" :item="item" :parent-id="item.id" />
+            <PagesViewPagesItem v-for="item in itemItems" :key="item.id" :item="item" :parent-id="item.id" />
             <li v-if="loadingItem" class="flex justify-center items-center py-4">
               <SfLoaderCircular size="sm" />
             </li>
           </ul>
         </div>
       </UiAccordionItem>
+
+      <PagesViewGlobalPagesSection />
     </div>
   </div>
   <CategorySettingsDrawer v-if="settingsCategory" />
 </template>
 
 <script setup lang="ts">
-import PagesItem from '~/components/PagesView/PagesItem.vue';
 import {
   SfIconClose,
   SfIconHelp,
@@ -140,8 +146,7 @@ import {
 } from '@storefront-ui/vue';
 import type { CategoryEntry } from '@plentymarkets/shop-api';
 const { locale, defaultLocale } = useI18n();
-
-const { closeDrawer, togglePageModal, settingsCategory } = useSiteConfiguration();
+const { closeSiteConfigurationDrawer, togglePageModal, settingsCategory } = useSiteConfiguration();
 const { loading, hasChanges, save } = useCategorySettingsCollection();
 
 const { contentItems, itemItems, loadingContent, loadingItem, fetchCategories, resetCategories } =
@@ -149,10 +154,11 @@ const { contentItems, itemItems, loadingContent, loadingItem, fetchCategories, r
 
 const contentPagesOpen = ref(false);
 const productPagesOpen = ref(false);
+const globalPagesOpen = ref(false);
 
 const isDefaultLocale = computed(() => locale.value === defaultLocale);
 
-const limitAccordionHeight = computed(() => contentPagesOpen.value && productPagesOpen.value);
+const limitAccordionHeight = computed(() => contentPagesOpen.value && productPagesOpen.value && globalPagesOpen.value);
 
 const handleScroll = async (e: Event, type: 'content' | 'item') => {
   const el = e.target as HTMLElement;
@@ -253,7 +259,13 @@ const homepageItem = computed<CategoryEntry>(() => ({
     "save-settings-label": "Save Settings",
     "reload-hint": "Changes to page settings are only reflected on reload.",
     "content-pages-label": "Content Pages",
-    "product-categories-label": "Product Categories"
+    "product-categories-label": "Product Categories",
+    "global-pages-label": "Page Layouts",
+    "global-pages-description": "Quick access to edit page layout, or reset to the default.",
+    "global-pages-product-category": "Product category page",
+    "global-pages-product-detail": "Product detail page",
+    "global-pages-edit-label": "Edit page",
+    "global-pages-reset-label": "Reset to default"
   },
   "de": {
     "label": "Pages",
@@ -263,7 +275,13 @@ const homepageItem = computed<CategoryEntry>(() => ({
     "save-settings-label": "Save Settings",
     "reload-hint": "Changes to page settings are only reflected on reload.",
     "content-pages-label": "Content Pages",
-    "product-categories-label": "Product Categories"
+    "product-categories-label": "Product Categories",
+    "global-pages-label": "Page Layouts",
+    "global-pages-description": "Quick access to edit page layout, or reset to the default.",
+    "global-pages-product-category": "Product category page",
+    "global-pages-product-detail": "Product detail page",
+    "global-pages-edit-label": "Edit page",
+    "global-pages-reset-label": "Reset to default"
   }
 }
 </i18n>

@@ -26,7 +26,7 @@
             :index="index"
             :active-index="activeIndex"
             :is-first-image="index === 0"
-            :disable-zoom="($isPreview && disableActions) || configuration.thumbnails.enableHoverZoom === false"
+            :disable-zoom="shouldEnableEditorFeatures || configuration.thumbnails.enableHoverZoom === false"
           />
         </SwiperSlide>
       </Swiper>
@@ -121,11 +121,13 @@ const props = withDefaults(defineProps<GalleryProps>(), {
       thumbnailType: 'left-vertical',
       enableHoverZoom: true,
     },
+    layout: {
+      fullWidth: false,
+    },
   }),
 });
 
-const { $isPreview } = useNuxtApp();
-const { disableActions } = useEditor();
+const { shouldEnableEditorFeatures } = useEditorState();
 
 const configuration = computed(() => props.configuration);
 const { images } = toRefs(props);

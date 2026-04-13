@@ -23,13 +23,16 @@ describe('Smoke Tests', () => {
     // prettier-ignore
     homePage
       .checkLanguage(text_en)
+      .safeModeBannerShouldNotExist()
       .topToolbarShouldNotExist()
       .sideToolbarShouldNotExist()
       .blockActionsShouldNotExist()
+      .assertBlockTemplate()
       .goToCategory();
 
     // prettier-ignore
     productListPage
+      .assertBlockTemplate()
       .assertGridView()
       .addToCart();
 
@@ -41,6 +44,8 @@ describe('Smoke Tests', () => {
     // prettier-ignore
     productDetailPage
       .assertProductDetailPageElements()
+      .assertBlockTemplate()
+      .assertProductStructuredDataExists()
       .addToCart(2);
 
     // prettier-ignore

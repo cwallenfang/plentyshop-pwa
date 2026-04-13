@@ -6,8 +6,8 @@ import type {
   SetProductCanonicalMetaData,
   UseStructuredDataState,
 } from './types';
-import { categoryTreeGetters, productGetters, reviewGetters, productSeoSettingsGetters } from '@plentymarkets/shop-api';
-import type { CategoryTreeItem, Product, CanonicalAlternate } from '@plentymarkets/shop-api';
+import { productGetters, reviewGetters, productSeoSettingsGetters } from '@plentymarkets/shop-api';
+import type { Product, CanonicalAlternate } from '@plentymarkets/shop-api';
 
 /**
  * @description Composable managing meta data
@@ -58,11 +58,11 @@ export const useStructuredData: useStructuredDataReturn = () => {
    * ``` ts
    * setSingleItemMeta({
    *  product: Product,
-   *  categoryTree: CategoryTreeItem
+   *  category: CategoryTreeItem
    * })
    * ```
    */
-  const setProductMetaData: SetProductMetaData = (product: Product, categoryTree: CategoryTreeItem) => {
+  const setProductMetaData: SetProductMetaData = (product: Product) => {
     state.value.loading = true;
     const { price, crossedPrice } = useProductPrice(product);
     const productId = Number(productGetters.getItemId(product));
@@ -91,7 +91,7 @@ export const useStructuredData: useStructuredDataReturn = () => {
       '@context': 'https://schema.org',
       '@type': 'Product',
       name: productGetters.getName(product),
-      category: categoryTreeGetters.getName(categoryTree),
+      category: productGetters.getCategoryName(product),
       releaseDate: '',
       image: productGetters.getCoverImage(product),
       identifier: productGetters.getId(product),
@@ -216,8 +216,9 @@ export const useStructuredData: useStructuredDataReturn = () => {
     const canonical = productSeoSettingsGetters.getCanonical(product);
 
     if (canonical) {
+      const canonicalUrl = productSeoSettingsGetters.getCanonicalHref(canonical);
       useHead({
-        link: [{ rel: 'canonical', href: productSeoSettingsGetters.getCanonicalHref(canonical) }],
+        link: [{ rel: 'canonical', href: canonicalUrl }],
       });
 
       const canonicalAlternates = productSeoSettingsGetters.getCanonicalAlternate(canonical);
@@ -231,6 +232,10 @@ export const useStructuredData: useStructuredDataReturn = () => {
 
       useHead({
         link: alternateLocales,
+      });
+
+      useSeoMeta({
+        ogUrl: canonicalUrl,
       });
     }
     state.value.loading = false;

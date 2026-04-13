@@ -3,6 +3,7 @@
     :is="component.componentName"
     v-for="(component, index) in filteredComponents"
     :key="index"
+    :payment-key="paymentKey"
     :disabled="disableBuyButton"
     @click="validateOnClickComponents($event, component)"
   />
@@ -12,7 +13,7 @@
         :disabled="disableBuyButton"
         type="Checkout"
         location="checkoutPage"
-        @validation-callback="handlePreparePayment"
+        @validation-callback="handlePreparePaymentPayPal"
       />
       <PayPalPayLaterBanner
         placement="payment"
@@ -26,17 +27,17 @@
       :disabled="disableBuyButton || paypalCardDialog"
       @click="openPayPalCardDialog"
     />
-    <PayPalApplePayButton
+    <ApplePayButton
       v-else-if="selectedPaymentId === paypalApplePayPaymentId"
       :style="disableBuyButton ? 'pointer-events: none;' : ''"
-      @button-clicked="handlePreparePayment"
+      @button-clicked="handlePreparePaymentPayPal"
     />
-    <PayPalGooglePayButton
+    <GooglePayButton
       v-else-if="selectedPaymentId === paypalGooglePayPaymentId"
       :style="disableBuyButton ? 'pointer-events: none;' : ''"
-      @button-clicked="handlePreparePayment"
+      @button-clicked="handlePreparePaymentPayPal"
     />
-    <PayPalAPM v-else-if="PayPalIsAPM" :disabled="disableBuyButton" @validation-callback="handlePreparePayment" />
+    <PayPalAPM v-else-if="PayPalIsAPM" :disabled="disableBuyButton" @validation-callback="handlePreparePaymentPayPal" />
 
     <UiButton
       v-else
@@ -50,29 +51,30 @@
       <template v-if="createOrderLoading || additionalInformationLoading">
         <SfLoaderCircular class="flex justify-center items-center" size="sm" />
       </template>
-      <template v-else>{{ t('buy') }}</template>
+      <template v-else>{{ t('common.actions.buy') }}</template>
     </UiButton>
   </div>
 
-  <UiModal
-    v-if="payPalPayUponInvoice"
-    v-model="payPalPayUponInvoice"
-    class="h-full w-full md:w-[600px] md:h-fit"
-    tag="section"
-    disable-click-away
-  >
-    <PayPalPayUponInvoiceForm @confirm-cancel="handlePayUponInvoiceModalClosing" />
-  </UiModal>
-
-  <UiModal
-    v-if="paypalCardDialog"
-    v-model="paypalCardDialog"
-    class="h-full w-full overflow-auto md:w-[600px] md:h-fit"
-    tag="section"
-    disable-click-away
-  >
-    <PayPalCreditCardForm @confirm-cancel="paypalCardDialog = false" />
-  </UiModal>
+  <Teleport to="body">
+    <UiModal
+      v-if="payPalPayUponInvoice"
+      v-model="payPalPayUponInvoice"
+      class="h-full w-full md:w-[600px] md:h-fit"
+      tag="section"
+      disable-click-away
+    >
+      <PayPalPayUponInvoiceForm @confirm-cancel="handlePayUponInvoiceModalClosing" />
+    </UiModal>
+    <UiModal
+      v-if="paypalCardDialog"
+      v-model="paypalCardDialog"
+      class="h-full w-full overflow-auto md:w-[600px] md:h-fit"
+      tag="section"
+      disable-click-away
+    >
+      <PayPalCreditCardForm @confirm-cancel="paypalCardDialog = false" />
+    </UiModal>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -83,12 +85,13 @@ import {
   PayPalPaymentKey,
   PayPalGooglePayKey,
   PayPalApplePayKey,
-} from '~/composables/usePayPal/types';
-import type { PayPalAddToCartCallback } from '~/components/PayPal/types';
+  PayPalPayUponInvoiceKey,
+  PayPalAlternativeFundingSourceMapper,
+} from '#paypal/types';
+import type { PayPalAddToCartCallback } from '#paypal/types';
 import { keyBy } from '~/utils/keyBy';
 import type { PaymentButtonComponent } from '@plentymarkets/shop-core';
 
-const { t } = useI18n();
 const { components } = useDynamicPaymentButtons();
 const { loading: createOrderLoading, createOrder } = useMakeOrder();
 const { isLoading: navigationInProgress } = useLoadingIndicator();
@@ -129,6 +132,12 @@ const disableBuyButton = computed(
     navigationInProgress.value ||
     processingOrder.value,
 );
+
+const paymentKey = computed(() => {
+  const paymentId = paymentProviderGetters.getMethodOfPaymentId(cart.value);
+  const paymentMethod = paymentProviderGetters.getPaymentMethodById(paymentMethods.value.list, Number(paymentId));
+  return paymentMethod ? paymentProviderGetters.getPaymentKey(paymentMethod) : null;
+});
 
 const paypalPaymentId = computed(() => {
   if (!paymentMethods.value.list) return null;
@@ -173,19 +182,23 @@ const handlePayUponInvoiceModalClosing = () => {
   usePayUponInvoice().resetState();
 };
 
-const handlePreparePayment = async (callback?: PayPalAddToCartCallback) => {
-  if (!readyToBuy()) {
-    if (typeof callback === 'function' && callback) callback(false);
-    return;
-  }
-
-  await doAdditionalInformation({
+const validateAndProceed = async (): Promise<boolean> => {
+  if (!readyToBuy()) return false;
+  return await doAdditionalInformation({
     shippingPrivacyHintAccepted: shippingPrivacyAgreement.value,
     orderContactWish: customerWish.value,
     orderCustomerSign: customerSign.value,
   });
+};
 
-  typeof callback === 'function' && callback ? callback(true) : await order();
+const handlePreparePaymentPayPal = async (callback?: PayPalAddToCartCallback) => {
+  const canProceed = await validateAndProceed();
+  if (typeof callback === 'function') callback(canProceed);
+};
+
+const handlePreparePayment = async () => {
+  const canProceed = await validateAndProceed();
+  if (canProceed) await order();
 };
 
 const order = async () => {
@@ -205,12 +218,12 @@ const order = async () => {
 
 const readyToBuy = () => {
   if (anyAddressFormIsOpen.value) {
-    send({ type: 'secondary', message: t('unsavedAddress') });
+    send({ type: 'secondary', message: t('address.unsavedWarning') });
     return backToFormEditing();
   }
 
   if (!hasShippingAddress.value || !hasBillingAddress.value) {
-    send({ type: 'secondary', message: t('errorMessages.checkout.missingAddress') });
+    send({ type: 'secondary', message: t('error.checkout.missingAddress') });
     scrollToShippingAddress();
     return false;
   }
@@ -219,13 +232,7 @@ const readyToBuy = () => {
 };
 
 const openPayPalCardDialog = async () => {
-  if (!readyToBuy()) return;
-  await doAdditionalInformation({
-    shippingPrivacyHintAccepted: shippingPrivacyAgreement.value,
-    orderContactWish: customerWish.value,
-    orderCustomerSign: customerSign.value,
-  });
-
+  if (!(await validateAndProceed())) return;
   paypalCardDialog.value = true;
 };
 
@@ -266,12 +273,7 @@ const validateOnClickComponents = async (event: MouseEvent, component: PaymentBu
   if (component.disableClickEvent) {
     return;
   }
-  await doAdditionalInformation({
-    shippingPrivacyHintAccepted: shippingPrivacyAgreement.value,
-    orderContactWish: customerWish.value,
-    orderCustomerSign: customerSign.value,
-  });
-  if (readyToBuy() && event.target) {
+  if (event.target && (await validateAndProceed())) {
     event.target.dispatchEvent(new CustomEvent('validated-click'));
   }
 };

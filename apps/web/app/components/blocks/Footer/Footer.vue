@@ -60,10 +60,9 @@
               </SfListItem>
             </ul>
           </div>
-          <div
+          <TextContent
             v-if="column?.description"
-            class="custom-html ml-4 text-sm hover:cursor-pointer"
-            v-html="column.description"
+            v-bind="mapToTextContentProps({ htmlDescription: column.description })"
           />
         </div>
       </div>
@@ -71,7 +70,7 @@
     <div>
       <div
         v-if="resolvedContent.footnote && resolvedContent.footnote.trim() !== ''"
-        class="text-sm py-10 md:py-6 px-10"
+        class="text-sm py-10 md:py-6 px-10 no-preflight"
         :class="{
           'text-left': resolvedContent.footnoteAlign === 'left',
           'text-center': resolvedContent.footnoteAlign === 'center',
@@ -89,16 +88,32 @@
 
 <script setup lang="ts">
 import { SfLink, SfListItem } from '@storefront-ui/vue';
-import type { FooterProps, FooterSettingsColumn } from './types';
-const { t } = useI18n();
+import type { FooterProps, FooterContent, FooterColumn } from './types';
+
 const props = defineProps<FooterProps>();
+const route = useRoute();
 const localePath = useLocalePath();
 const NuxtLink = resolveComponent('NuxtLink');
+const { getFooterBlock, mapFooterData, FOOTER_SWITCH_DEFINITIONS, createFooterBlock } = useBlockTemplates(
+  'index',
+  'immutable',
+  useNuxtApp().$i18n.locale.value,
+);
 
-const { getFooterSettings } = useFooter();
-const resolvedContent = computed(() => mapFooterData(props.content ?? getFooterSettings()));
+const shouldRender = computed(() => {
+  if (route.meta.isBlockified) return !!props.content;
+  return true;
+});
 
-const getColumnSwitches = (column: FooterSettingsColumn) => {
+const resolvedContent = computed(() => {
+  if (!shouldRender.value) return null;
+
+  const block = props.content ? createFooterBlock(props.content, props.meta) : getFooterBlock();
+
+  return mapFooterData(block).content as FooterContent;
+});
+
+const getColumnSwitches = (column: FooterColumn) => {
   return FOOTER_SWITCH_DEFINITIONS.filter((switchConfig) => column[switchConfig.key] === true).map((switchConfig) => ({
     id: `${switchConfig.key}-switch`,
     translationKey: t(switchConfig.shopTranslationKey),
@@ -107,13 +122,3 @@ const getColumnSwitches = (column: FooterSettingsColumn) => {
   }));
 };
 </script>
-
-<style scoped>
-::v-deep(.custom-html li) {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-::v-deep(.custom-html li:hover) {
-  text-decoration: underline;
-}
-</style>

@@ -109,23 +109,25 @@
       <UiFormLabel>{{ getEditorTranslation('borders-label') }}</UiFormLabel>
       <SfSwitch v-model="priceCardBlock.borders" data-testid="price-card-borders" />
     </div>
-
+    <EditorFullWidthToggle v-model="isFullWidth" :block-uuid="blockUuid" />
     <div class="py-4">
       <UiFormLabel class="mb-2 block">{{ getEditorTranslation('border-color-label') }}</UiFormLabel>
-
-      <SfInput v-model="priceCardBlock.borderColor" type="text" data-testid="price-card-border-color">
-        <template #suffix>
-          <label
-            for="border-color"
-            :style="{ backgroundColor: priceCardBlock.borderColor }"
-            class="border border-[#a0a0a0] rounded-lg cursor-pointer"
-          >
-            <input id="border-color" v-model="priceCardBlock.borderColor" type="color" class="invisible w-8" />
-          </label>
+      <EditorColorPicker v-model="priceCardBlock.borderColor" class="w-full">
+        <template #trigger="{ color, toggle }">
+          <SfInput v-model="priceCardBlock.borderColor" type="text" data-testid="price-card-border-color">
+            <template #suffix>
+              <button
+                type="button"
+                class="border border-[#a0a0a0] rounded-lg cursor-pointer w-10 h-8"
+                :style="{ backgroundColor: color }"
+                @mousedown.stop
+                @click.stop="toggle"
+              />
+            </template>
+          </SfInput>
         </template>
-      </SfInput>
+      </EditorColorPicker>
     </div>
-
     <div class="py-2">
       <UiFormLabel>{{ getEditorTranslation('padding-label') }}</UiFormLabel>
       <div class="grid grid-cols-4 gap-px rounded-md overflow-hidden border border-gray-300">
@@ -188,12 +190,12 @@ import {
   SfIconInfo,
   SfTooltip,
 } from '@storefront-ui/vue';
-import dragIcon from 'assets/icons/paths/drag.svg';
+import dragIcon from '~/assets/icons/paths/drag.svg';
 import type { PriceCardFieldKey, PriceCardContent } from '~/components/ui/PurchaseCard/types';
 import type { PriceCardFormProps } from '~/components/blocks/PriceCard/types';
 
 const route = useRoute();
-const { data } = useCategoryTemplate(
+const { data } = useBlockTemplates(
   route?.meta?.identifier as string,
   route.meta.type as string,
   useNuxtApp().$i18n.locale.value,
@@ -207,6 +209,8 @@ const priceCardBlock = computed<PriceCardContent>(() => {
   const block = findOrDeleteBlockByUuid(data.value, props.uuid || blockUuid.value);
   return block?.content as PriceCardContent;
 });
+
+const { isFullWidth } = useFullWidthToggleForContent(priceCardBlock);
 
 const { getSetting } = useSiteSettings('dontSplitItemBundle');
 priceCardBlock.value.fields['itemBundle'] = getSetting() !== '1';

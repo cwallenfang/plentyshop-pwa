@@ -111,6 +111,11 @@
 <script setup lang="ts">
 import { type Order, orderGetters } from '@plentymarkets/shop-api';
 import { useDisclosure, SfLoaderCircular } from '@storefront-ui/vue';
+import type { Locale } from '#i18n';
+
+defineI18nRoute({
+  locales: process.env.LANGUAGELIST?.split(',') as Locale[],
+});
 
 definePageMeta({
   layout: 'account',
@@ -126,7 +131,7 @@ const NuxtLink = resolveComponent('NuxtLink');
 const localePath = useLocalePath();
 const maxVisiblePages = ref(1);
 const route = useRoute();
-const { locale, t } = useI18n();
+const { locale } = useI18n();
 const setMaxVisiblePages = (isWide: boolean) => (maxVisiblePages.value = isWide ? 5 : 1);
 const isDesktop = computed(() => viewport.isGreaterOrEquals('lg'));
 const isTablet = computed(() => viewport.isGreaterOrEquals('md') && viewport.isLessThan('lg'));

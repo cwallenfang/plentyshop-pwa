@@ -73,12 +73,13 @@ import { deepEqual } from '~/utils/jsonHelper';
 const previewLabel = 'Switch to Preview mode to see how your site will appear to visitors.';
 const editLabel = 'Switch to Edit mode to modify your page content and layout.';
 
+const { hasChanges: localizationHasChanges } = useEditorLocalizationKeys();
 const { isEditing, isEditingEnabled, disableActions } = useEditor();
 const { isDrawerOpen } = useDrawerState();
 
 const route = useRoute();
 const initial = shallowRef(
-  useCategoryTemplate(
+  useBlockTemplates(
     String(route.meta?.identifier ?? ''),
     String(route.meta?.type ?? ''),
     useNuxtApp().$i18n.locale.value,
@@ -88,7 +89,7 @@ const initial = shallowRef(
 watch(
   () => [route.meta?.identifier, route.meta?.type],
   () => {
-    initial.value = useCategoryTemplate(
+    initial.value = useBlockTemplates(
       String(route.meta?.identifier ?? ''),
       String(route.meta?.type ?? ''),
       useNuxtApp().$i18n.locale.value,
@@ -103,10 +104,13 @@ const cleanData = computed(() => initial.value.cleanData.value);
 
 const { closeDrawer } = useSiteConfiguration();
 const { settingsIsDirty, loading: settingsLoading } = useSiteSettings();
+const { assetsIsDirty } = useCustomAssets();
 
 const { save } = useToolbar();
 
-const isTouched = computed(() => settingsIsDirty.value || isEditingEnabled.value);
+const isTouched = computed(
+  () => assetsIsDirty.value || settingsIsDirty.value || isEditingEnabled.value || localizationHasChanges.value,
+);
 
 const toggleEdit = () => {
   disableActions.value = !disableActions.value;

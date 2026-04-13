@@ -1,9 +1,11 @@
 import type { FacetSearchCriteria, Product, Facet, Block } from '@plentymarkets/shop-api';
 import { defaults, type SetCurrentProduct } from '~/composables';
 import type { UseProductsState, FetchProducts, UseProductsReturn } from '~/composables/useProducts/types';
-import categoryTemplateData from '~/composables/useCategoryTemplate/categoryTemplateData.json';
+import { getCategoryTemplate } from '~/utils/blockTemplates/category';
+import { fakeFacetCallEN } from '~/utils/facets/fakeFacetCallEN';
+import { fakeFacetCallDE } from '~/utils/facets/fakeFacetCallDE';
 
-const useCategoryTemplateData = () => categoryTemplateData as Block[];
+const useBlockTemplatesData = async (locale: string) => await getCategoryTemplate(locale);
 
 /**
  * @description Composable for managing products.
@@ -20,6 +22,18 @@ export const useProducts: UseProductsReturn = (category = '') => {
     productsPerPage: defaults.DEFAULT_ITEMS_PER_PAGE,
     currentProduct: {} as Product,
   }));
+
+  const isGlobalProductCategoryTemplate = computed(() => {
+    const route = useRoute();
+    const slugParam = route.params.slug;
+
+    if (slugParam === undefined) {
+      return false;
+    }
+
+    const slug = Array.isArray(slugParam) ? slugParam.join('/') : slugParam;
+    return `/${slug}` === paths.globalItemCategory;
+  });
 
   /**
    * @description Function for fetching products.
@@ -39,15 +53,47 @@ export const useProducts: UseProductsReturn = (category = '') => {
   const fetchProducts: FetchProducts = async (params: FacetSearchCriteria) => {
     const route = useRoute();
     const { $i18n } = useNuxtApp();
-    const { setupBlocks } = useCategoryTemplate(
-      route?.meta?.identifier as string,
-      route.meta.type as string,
-      $i18n.locale.value,
-    );
+    const { isInEditor } = useEditorState();
+    const {
+      data: blockData,
+      setupBlocks,
+      getBlocksServer,
+      isFooterBlock,
+    } = useBlockTemplates(route?.meta?.identifier as string, route.meta.type as string, $i18n.locale.value);
 
     state.value.loading = true;
 
     if (params.categoryUrlPath?.endsWith('.js')) return state.value.data;
+
+    if (isGlobalProductCategoryTemplate.value && isInEditor.value) {
+      const fakeFacet = $i18n.locale.value === 'en' ? fakeFacetCallEN : fakeFacetCallDE;
+
+      await getBlocksServer(route.meta.identifier as string, route.meta.type as string);
+
+      const hasContentBlocks = blockData.value?.some((block) => !isFooterBlock(block));
+      const fakeBlocks = hasContentBlocks ? blockData.value : await useBlockTemplatesData($i18n.locale.value);
+
+      state.value.data = {
+        category: fakeFacet['data'].category,
+        products: [],
+        facets: [],
+        blocks: fakeBlocks,
+        languageUrls: {
+          'x-default': '',
+        },
+        pagination: {
+          totals: 8,
+          perPageOptions: defaults.PER_PAGE_STEPS,
+        },
+      } as Facet;
+
+      setupBlocks(fakeBlocks);
+      handlePreviewProducts(state, $i18n.locale.value);
+
+      state.value.loading = false;
+      return state.value.data;
+    }
+
     const identifier = category || params.categoryUrlPath || params.categoryId;
 
     const { data } = await useAsyncData(`useProducts-${identifier}-${JSON.stringify(params)}`, () =>
@@ -61,9 +107,10 @@ export const useProducts: UseProductsReturn = (category = '') => {
       state.value.data = data.value.data;
       handlePreviewProducts(state, $i18n.locale.value);
 
-      const defaultData = state.value.data.category?.type === 'item' ? useCategoryTemplateData() : [];
+     const defaultData =
+        state.value.data.category?.type === 'item' ? await useBlockTemplatesData($i18n.locale.value) : [];
 
-      await setupBlocks((state.value.data?.blocks?.length ? state.value.data.blocks : defaultData) as Block[]);
+      setupBlocks((state.value.data?.blocks?.length ? state.value.data.blocks : defaultData) as Block[]);
     }
 
     state.value.loading = false;
@@ -90,6 +137,7 @@ export const useProducts: UseProductsReturn = (category = '') => {
   return {
     fetchProducts,
     setCurrentProduct,
+    isGlobalProductCategoryTemplate,
     ...toRefs(state.value),
   };
 };

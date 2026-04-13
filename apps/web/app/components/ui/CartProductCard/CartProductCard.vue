@@ -1,7 +1,7 @@
 <template>
   <div class="relative flex border-neutral-200 border-b min-w-[320px] p-4 last:mb-0" data-testid="cart-product-card">
     <div class="relative overflow-hidden rounded-md w-[100px] sm:w-[176px]">
-      <SfLink :tag="NuxtLink" :to="path" class="flex items-center justify-center">
+      <SfLink :tag="NuxtLink" :to="path" class="flex items-center justify-center" data-testid="cart-product-card-link">
         <NuxtImg
           v-if="cartItem.variation?.images?.all?.length"
           ref="img"
@@ -126,7 +126,7 @@
       v-else-if="!disabled"
       square
       data-testid="remove-item-from-basket"
-      :aria-label="t('removeItemFromBasket')"
+      :aria-label="t('common.actions.removeItemFromBasket')"
       variant="tertiary"
       size="sm"
       class="top-2 right-2 bg-white items-start h-fit"
@@ -150,7 +150,6 @@ const emit = defineEmits(['load']);
 const { addModernImageExtension, getImageForViewport } = useModernImage();
 const { data: cartData, setCartItemQuantity, deleteCartItem } = useCart();
 const { send } = useNotification();
-const { t } = useI18n();
 const { format } = usePriceFormatter();
 const localePath = useLocalePath();
 
@@ -222,7 +221,7 @@ const changeQuantity = async (quantity: string) => {
 const deleteItem = async () => {
   deleteLoading.value = true;
   await deleteCartItem(cartItem);
-  send({ message: t('deletedFromCart'), type: 'positive' });
+  send({ message: t('cart.itemRemoved'), type: 'positive' });
   deleteLoading.value = false;
 };
 
@@ -247,7 +246,9 @@ const basePriceSingleValue = computed(
     productGetters.getDefaultBasePrice(cartItem.variation ?? ({} as Product)),
 );
 
-const path = computed(() => localePath('/' + cartGetters.getProductPath(cartItem)));
+const path = computed(() => {
+  return localePath('/' + cartGetters.getProductPath(cartItem, useCallisto().isEnabled));
+});
 
 const imageAlt = computed(() => {
   const image = cartItem?.variation?.images?.all[0];

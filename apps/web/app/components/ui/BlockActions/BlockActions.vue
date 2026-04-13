@@ -15,13 +15,13 @@
   >
     <SfTooltip
       v-if="!props.actions.isEditable"
-      label="You can only edit the footer on the homepage"
+      :label="getEditorUITranslation('block-edit-homepage-only', { blockName: props.block.name.toLowerCase() })"
       placement="left"
       class="flex"
     >
       <button
         class="text-black hover:bg-gray-100 rounded no-drag p-1"
-        data-testid="open-editor-button"
+        :data-testid="`${props.block.name}-open-editor-button`"
         aria-label="editor button"
         :disabled="!props.actions.isEditable"
         :class="{ 'opacity-40 cursor-not-allowed': !props.actions.isEditable }"
@@ -37,7 +37,7 @@
     <SfTooltip v-else :label="editLabel" placement="left" :show-arrow="true">
       <button
         :class="['text-black', 'p-1', 'rounded', 'no-drag', ...(props.actions?.hoverBackground || [])]"
-        data-testid="open-editor-button"
+        :data-testid="`${props.block.name}-open-editor-button`"
         aria-label="editor button"
         @click.stop="triggerEdit"
       >
@@ -57,8 +57,8 @@
           class="flex items-center justify-center h-[18px] text-black hover:bg-gray-100 rounded no-drag"
           data-testid="move-up-button"
           aria-label="move up button"
-          :disabled="props.index === 0"
-          :class="{ 'opacity-40 cursor-not-allowed': props.index === 0 }"
+          :disabled="isFirstContentBlock(props.index)"
+          :class="{ 'opacity-40 cursor-not-allowed': isFirstContentBlock(props.index) }"
           @click="changePosition(-1)"
         >
           <SfIconExpandLess />
@@ -125,7 +125,7 @@ const props = withDefaults(defineProps<BlockActionsProps>(), {
 });
 const emit = defineEmits(['edit', 'delete', 'change-position']);
 const { openDrawerWithView } = useSiteConfiguration();
-const { deleteBlock, isLastNonFooterBlock } = useBlockManager();
+const { deleteBlock, isLastNonFooterBlock, isFirstContentBlock } = useBlockManager();
 
 const triggerEdit = () => {
   openDrawerWithView('blocksSettings', props.block);

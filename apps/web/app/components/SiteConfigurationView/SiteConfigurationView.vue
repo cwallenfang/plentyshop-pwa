@@ -1,17 +1,17 @@
 <template>
-  <div class="site-settings-view sticky top-[52px] relative" data-testid="site-settings-drawer">
+  <div class="site-settings-view sticky" data-testid="site-settings-drawer">
     <div v-if="subCategories.length > 1 && !activeSubCategory" key="sub-list" class="sub-categories">
       <header class="border-b">
         <div class="flex items-center justify-between px-4 py-5">
-          <div class="flex items-center">
+          <div class="flex items-center w-full">
             <div class="flex items-center">
               <slot name="setting-breadcrumbs" />
             </div>
-            <div class="text-xl font-bold">
+            <div class="text-xl font-bold w-full">
               <slot name="setting-title" />
             </div>
           </div>
-          <button data-testid="view-close" class="!p-0" @click="closeDrawer">
+          <button data-testid="view-close" class="!p-0 flex-shrink-0" @click="closeSiteConfigurationDrawer">
             <SfIconClose />
           </button>
         </div>
@@ -24,11 +24,11 @@
           v-for="subCategory in subCategories"
           :key="subCategory"
           class="w-full hover:bg-neutral-100 px-4 py-5 flex justify-between items-center select-none border-b"
-          :data-testid="`site-settings-sub-category-${subCategory}`"
+          :data-testid="`site-settings-category-${subCategory}`"
           @click="activeSubCategory = subCategory"
         >
           <span class="break-words">
-            {{ t(`${subCategory}`) }}
+            {{ getEditorUITranslation(subCategory) }}
           </span>
           <template #suffix><SfIconChevronRight /></template>
         </SfListItem>
@@ -40,14 +40,19 @@
           <div class="flex items-start flex-col">
             <div class="flex items-center text-sm cursor-pointer" @click="activeSubCategory = ''">
               <slot name="setting-breadcrumbs">
-                {{ t(`${activeSetting}`) }}
+                {{ getEditorUITranslation(activeSetting) }}
               </slot>
             </div>
             <div class="text-xl font-bold">
               <slot name="setting-title" />
             </div>
           </div>
-          <button v-if="subCategories.length === 1" data-testid="view-close" class="!p-0" @click="closeDrawer">
+          <button
+            v-if="subCategories.length === 1"
+            data-testid="view-close"
+            class="!p-0"
+            @click="closeSiteConfigurationDrawer"
+          >
             <SfIconClose />
           </button>
           <button v-else data-testid="view-back" class="!p-0" @click="activeSubCategory = ''">
@@ -66,17 +71,15 @@
         </SettingsGroup>
       </div>
     </div>
+
+    <slot />
   </div>
 </template>
 
 <script setup lang="ts">
 import { SfListItem, SfIconChevronRight, SfIconChevronLeft, SfIconClose } from '@storefront-ui/vue';
-import { getSubCategories } from '~/utils/settings-groups-imports';
-import type { Messages } from '~/components/SiteConfigurationView/types';
-import { getSettingsTranslations } from '~/utils/settings-translations-imports';
-const { t } = useI18n();
 
-const { closeDrawer, activeSetting, activeSubCategory, setActiveSubCategory } = useSiteConfiguration();
+const { closeSiteConfigurationDrawer, activeSetting, activeSubCategory, setActiveSubCategory } = useSiteConfiguration();
 const runtimeConfig = useRuntimeConfig();
 
 const subCategories = computed(() => {
@@ -96,18 +99,4 @@ const groups = computed(() => {
 
   return allGroups.filter((group) => !excludedGroups.includes(group.slug));
 });
-
-const messages: Messages = {};
-
-const { $registerMessages } = useNuxtApp();
-Object.values(getSettingsTranslations()).forEach((fileContent) => {
-  Object.entries(fileContent).forEach(([locale, translations]) => {
-    if (!messages[locale]) {
-      messages[locale] = {};
-    }
-    Object.assign(messages[locale]!, translations);
-  });
-});
-
-$registerMessages(messages);
 </script>

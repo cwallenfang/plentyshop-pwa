@@ -54,6 +54,8 @@
         </span>
       </div>
 
+      <EditorFullWidthToggle v-model="isFullWidth" :block-uuid="blockUuid" />
+
       <div class="mt-5">
         {{ getEditorTranslation('padding') }}
       </div>
@@ -114,7 +116,7 @@ import {
 import type { ItemTextFormProps, ItemTextContent } from './types';
 
 const route = useRoute();
-const { data } = useCategoryTemplate(
+const { data } = useBlockTemplates(
   route?.meta?.identifier as string,
   route.meta.type as string,
   useNuxtApp().$i18n.locale.value,
@@ -133,6 +135,8 @@ const itemTextBlock = computed<ItemTextContent>(() => {
   }
   return content as ItemTextContent;
 });
+
+const { isFullWidth } = useFullWidthToggleForContent(itemTextBlock);
 
 const textSettings = ref(false);
 const layoutSettings = ref(false);

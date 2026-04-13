@@ -1,22 +1,8 @@
 import { PageObject } from './PageObject';
 
-export const firstBannerBlockUuid = 'a7b3c1d9-2e6f-4a5b-8c7d-1e2f3b4c5a6d';
-
 export class EditorObject extends PageObject {
-  get pretitle() {
-    return cy.getByTestId(`banner-pretitle-${firstBannerBlockUuid}`);
-  }
-
-  get title() {
-    return cy.getByTestId(`banner-title-${firstBannerBlockUuid}`);
-  }
-
-  get subtitle() {
-    return cy.getByTestId(`banner-subtitle-${firstBannerBlockUuid}`);
-  }
-
   get description() {
-    return cy.getByTestId(`banner-description-${firstBannerBlockUuid}`);
+    return cy.get('[data-testid^="text-html"]').first();
   }
 
   get editorToolbar() {
@@ -31,6 +17,10 @@ export class EditorObject extends PageObject {
     return cy.getByTestId('edit-block-actions');
   }
 
+  get imageInMultiGridActions() {
+    return cy.getByTestId('Image-open-editor-button');
+  }
+
   get openEditorButton() {
     return cy.getByTestId('open-editor-button');
   }
@@ -40,11 +30,15 @@ export class EditorObject extends PageObject {
   }
 
   get exitEditorButton() {
-    return cy.get('#close');
+    return cy.getByTestId('close-editor-button');
   }
 
   get blockWrappers() {
     return cy.get('[data-testid*="block-wrapper"]');
+  }
+
+  get blocksAccordionLayout() {
+    return cy.get('[data-testid="block-category-layout"]');
   }
 
   get blocksAccordionImage() {
@@ -57,6 +51,14 @@ export class EditorObject extends PageObject {
 
   get bottomBlockButton() {
     return cy.getByTestId('bottom-add-block');
+  }
+
+  get inlineBlockButton() {
+    return cy.getByTestId('inactive-empty-multicolumn');
+  }
+
+  get deleteFormBlockButton() {
+    return cy.getByTestId('delete-form-block-button');
   }
 
   get deleteBlockButton() {
@@ -79,7 +81,23 @@ export class EditorObject extends PageObject {
     return cy.getByTestId('editor-language-select');
   }
 
-  get addBlockButton() {
+  get languageList() {
+    return cy.getByTestId('editor-language-list');
+  }
+
+  get languageOptionGerman() {
+    return cy.getByTestId('language-option-de');
+  }
+
+  get multiGridColumns() {
+    return cy.getByTestId('multi-grid-column');
+  }
+
+  get addLayoutBlockButton() {
+    return cy.getByTestId('block-add-layout-0');
+  }
+
+  get addImageBlockButton() {
     return cy.getByTestId('block-add-image-0');
   }
 
@@ -97,6 +115,10 @@ export class EditorObject extends PageObject {
 
   get generalSettingsButton() {
     return cy.getByTestId('open-general-settings-drawer');
+  }
+
+  get seoSettingsButton() {
+    return cy.getByTestId('open-seo-settings-drawer');
   }
 
   blockIsBanner(el: JQuery<HTMLElement>) {
@@ -141,12 +163,25 @@ export class EditorObject extends PageObject {
   }
 
   toggleCategorySettings() {
-    this.categorySettingsButton.should('be.visible').click();
+    this.categorySettingsButton
+      .should('be.visible')
+      .click()
+      .trigger('mouseout', { force: true })
+      .trigger('mouseleave', { force: true });
+    return this;
+  }
+
+  toggleSeoSettings() {
+    this.seoSettingsButton.should('be.visible').click();
     return this;
   }
 
   toggleGeneralSettings() {
-    this.generalSettingsButton.should('be.visible').click();
+    this.generalSettingsButton
+      .should('be.visible')
+      .click()
+      .trigger('mouseout', { force: true })
+      .trigger('mouseleave', { force: true });
     return this;
   }
 
@@ -201,9 +236,6 @@ export class EditorObject extends PageObject {
 
   checkEditorChanges() {
     this.exitEditorButton.get('#close').click({ force: true });
-    this.pretitle.should('have.text', 'New pretitle from cypress');
-    this.title.should('have.text', 'New title from cypress');
-    this.subtitle.should('not.exist');
     this.description.should('have.text', 'Description from cypress.');
   }
 
@@ -256,10 +288,12 @@ export class EditorObject extends PageObject {
     cy.intercept('/plentysystems/getSession').as('getSession');
 
     this.editPreviewButton.click();
-    this.languageSwitcher.should('exist');
-    this.languageSwitcher.select('de');
+    this.languageSwitcher.should('be.visible').click();
+    this.languageList.should('be.visible');
+    this.languageList.children().should('have.length', 2);
+    this.languageOptionGerman.should('be.visible').click();
     cy.wait(['@getSession', '@getCategoryTree', '@getBlocks']);
-    this.title.first().should('have.text', 'Ihr Sound');
+    this.description.should('contain.text', 'Ihr Sound');
   }
 
   addBlockTop() {
@@ -270,7 +304,7 @@ export class EditorObject extends PageObject {
       cy.wait(1000);
       this.blocksAccordionImage.should('exist').click();
       cy.wait(1000);
-      this.addBlockButton.first().should('exist').click();
+      this.addImageBlockButton.first().should('exist').click();
       cy.wait(1000);
       this.blockWrappers.should('have.length', initialLength + 1);
     });
@@ -284,7 +318,7 @@ export class EditorObject extends PageObject {
       cy.wait(1000);
       this.blocksAccordionImage.should('exist').click();
       cy.wait(1000);
-      this.addBlockButton.click();
+      this.addImageBlockButton.click();
       cy.wait(1000);
       this.blockWrappers.should('have.length', initialLength + 1);
     });
@@ -340,18 +374,43 @@ export class EditorObject extends PageObject {
 
   checkWrapperSpacings() {
     this.blockWrappers.each((el) => {
-      if (
-        this.blockIsBanner(el) ||
-        this.isMultiGrid(el) ||
-        this.isInnerBlock(el) ||
-        this.blockIsNewsletter(el) ||
-        this.blockIsFooter(el.get(0))
-      ) {
+      if (this.blockIsBanner(el) || this.isMultiGrid(el) || this.isInnerBlock(el) || this.blockIsFooter(el.get(0))) {
         cy.wrap(el).should('not.have.class', 'px-4').and('not.have.class', 'md:px-6');
         cy.wrap(el).should('not.have.class', 'px-4').and('not.have.class', 'md:px-6');
       } else {
-        cy.wrap(el).should('have.class', 'px-4').and('have.class', 'md:px-6');
+        cy.wrap(el).should('have.class', 'p-4').and('have.class', 'md:px-6');
       }
     });
+  }
+
+  addMultiGridTop() {
+    this.topBlockButton.first().should('exist').click();
+    cy.wait(1000);
+    this.blocksAccordionLayout.click();
+    cy.wait(1000);
+    this.addLayoutBlockButton.click();
+    cy.wait(1000);
+  }
+
+  addBlockInGridColumn(column: number) {
+    this.inlineBlockButton.eq(column).should('exist').click();
+    cy.wait(1000);
+    this.blocksAccordionImage.should('exist').click();
+    cy.wait(1000);
+    this.addImageBlockButton.click();
+    cy.wait(1000);
+  }
+
+  closeEditor() {
+    this.exitEditorButton.should('exist').click();
+  }
+
+  deleteBlockInGridColumn(column: number) {
+    this.imageInMultiGridActions.eq(column).should('exist').click({ force: true });
+    cy.wait(1000);
+    this.deleteFormBlockButton.should('exist').click();
+    cy.wait(1000);
+    this.inlineBlockButton.eq(column).should('exist');
+    this.inlineBlockButton.should('have.length', 2);
   }
 }

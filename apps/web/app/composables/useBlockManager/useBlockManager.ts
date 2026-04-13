@@ -3,11 +3,6 @@ import type { BlockPosition, RefCallback, ShowBottomAddInGridOptions } from './t
 import { v4 as uuid } from 'uuid';
 import type { LazyLoadConfig } from '~/components/PageBlock/types';
 
-const isEmptyBlock = (block: Block): boolean => {
-  const options = block?.content;
-  return !options || (typeof options === 'object' && Object.keys(options).length === 0);
-};
-const blockHasData = (block: Block): boolean => !isEmptyBlock(block);
 const visiblePlaceholder = ref<{ uuid: string; position: BlockPosition }>({
   uuid: '',
   position: 'top',
@@ -32,7 +27,7 @@ export const useBlockManager = () => {
   const { $i18n } = useNuxtApp();
 
   const route = useRoute();
-  const { data, cleanData, updateBlocks } = useCategoryTemplate(
+  const { data, cleanData, updateBlocks } = useBlockTemplates(
     route?.meta?.identifier as string,
     route.meta.type as string,
     useNuxtApp().$i18n.locale.value,
@@ -40,7 +35,7 @@ export const useBlockManager = () => {
 
   const { isEditingEnabled } = useEditor();
   const { getBlockTemplateByLanguage } = useBlocksList();
-  const { openDrawerWithView, closeDrawer } = useSiteConfiguration();
+  const { openDrawerWithView, closeBlocksConfigurationDrawer } = useSiteConfiguration();
   const { send } = useNotification();
 
   const currentBlock = ref<Block | null>(null);
@@ -63,9 +58,9 @@ export const useBlockManager = () => {
     const newBlock = await getBlockTemplateByLanguage(category, variationIndex, $i18n.locale.value);
     newBlock.meta.uuid = uuid();
 
-    const nonFooterBlocks = data.value.filter((block: Block) => block.name !== 'Footer');
+    const nonFooterBlocks = data.value.filter((block: Block) => !isFooterBlock(block));
     if (nonFooterBlocks.length === 0) {
-      updateBlocks([newBlock, ...data.value.filter((block: Block) => block.name === 'Footer')]);
+      updateBlocks([newBlock, ...data.value.filter((block: Block) => isFooterBlock(block))]);
       openDrawerWithView('blocksSettings', newBlock);
       return;
     }
@@ -73,12 +68,9 @@ export const useBlockManager = () => {
     const copiedData = JSON.parse(JSON.stringify(data.value));
     const parentInfo = findBlockParent(copiedData, targetUuid);
 
-    if (!parentInfo) {
-      console.error('block not found');
-      return;
-    }
+    const parent = parentInfo?.parent ?? copiedData;
+    const index = parentInfo?.index ?? 0;
 
-    const { parent, index } = parentInfo;
     const targetBlock = parent[index];
     if (!targetBlock) return;
 
@@ -95,18 +87,51 @@ export const useBlockManager = () => {
     }
 
     updateBlocks(copiedData);
-    openDrawerWithView('blocksSettings', newBlock);
+
+    if (!isHeaderContainerBlock(getRootParent(copiedData, newBlock.meta.uuid))) {
+      openDrawerWithView('blocksSettings', newBlock);
+    }
 
     visiblePlaceholder.value = { uuid: '', position: 'top' };
     isEditingEnabled.value = !deepEqual(cleanData.value, copiedData);
 
-    scrollIntoBlockView(newBlock);
+    scrollIntoBlockView(newBlock, false, 'bottom', 'auto');
+
+    const selectedUuid = useState<string>('toc-selected-uuid');
+    selectedUuid.value = newBlock.meta.uuid;
+    openDrawerWithView('TableOfContents');
   };
 
-  const scrollIntoBlockView = (block: Block) => {
+  const scrollIntoBlockView = (
+    block: Block,
+    scrollToPlaceholder: boolean = false,
+    position?: 'top' | 'bottom',
+    behaviour: 'auto' | 'instant' | 'smooth' = 'smooth',
+  ) => {
     setTimeout(() => {
-      const el = document.querySelector(`[data-uuid="${block.meta.uuid}"]`);
-      if (el) el.scrollIntoView({ behavior: 'auto', block: 'center' });
+      let el: Element | null = null;
+
+      if (scrollToPlaceholder && position) {
+        const blockEl = document.querySelector(`[data-uuid="${block.meta.uuid}"]`);
+        if (blockEl) {
+          const parentWrapper = blockEl.closest('div');
+          if (parentWrapper) {
+            const placeholder = parentWrapper.querySelector('[data-testid="block-placeholder"]');
+            if (placeholder) {
+              el = placeholder;
+            }
+          }
+        }
+        if (!el) {
+          el = document.querySelector('[data-testid="block-placeholder"]');
+        }
+      } else {
+        el = document.querySelector(`[data-uuid="${block.meta.uuid}"]`);
+      }
+
+      if (el) {
+        el.scrollIntoView({ behavior: behaviour, block: 'center' });
+      }
     }, 100);
   };
 
@@ -161,9 +186,15 @@ export const useBlockManager = () => {
 
   const isLastNonFooterBlock = (index: number) => {
     if (!data.value || data.value.length === 0) return false;
-    const hasFooter = data.value.length > 0 && data.value[data.value.length - 1]?.name === 'Footer';
+    const hasFooter = data.value.length > 0 && isFooterBlock(data.value[data.value.length - 1]);
     const lastNonFooterIndex = hasFooter ? data.value.length - 2 : data.value.length - 1;
     return index === lastNonFooterIndex;
+  };
+
+  const isFirstContentBlock = (index: number): boolean => {
+    if (!data.value || data.value.length === 0) return false;
+    const firstContentIndex = data.value.findIndex((block) => !isHeaderContainerBlock(block));
+    return index === firstContentIndex;
   };
 
   const findBlockParent = (blocks: Block[], targetUuid: string): { parent: Block[]; index: number } | null => {
@@ -177,6 +208,20 @@ export const useBlockManager = () => {
       }
     }
     return null;
+  };
+
+  const blockContainsUuid = (block: Block, targetUuid: string): boolean => {
+    if (block.meta?.uuid === targetUuid) return true;
+
+    return (
+      block.type === 'structure' &&
+      Array.isArray(block.content) &&
+      block.content.some((child) => blockContainsUuid(child, targetUuid))
+    );
+  };
+
+  const getRootParent = (blocks: Block[], targetUuid: string): Block | null => {
+    return blocks.find((rootBlock) => blockContainsUuid(rootBlock, targetUuid)) ?? null;
   };
 
   const setUuid = (blocks: Block[]) => {
@@ -216,7 +261,7 @@ export const useBlockManager = () => {
         findOrDeleteBlockByUuid(data.value, uuid, true);
       }
       isEditingEnabled.value = !deepEqual(cleanData.value, data.value);
-      closeDrawer();
+      closeBlocksConfigurationDrawer();
     }
   };
 
@@ -240,7 +285,8 @@ export const useBlockManager = () => {
     if (parentInfo) {
       const { parent, index } = parentInfo;
       const layoutTemplate = await getBlockTemplateByLanguage('layout', 0, $i18n.locale.value);
-      const newBlock = { ...layoutTemplate };
+      const layoutTemplateContent = layoutTemplate.content as Block[];
+      const newBlock = { ...layoutTemplateContent[0] } as Block;
 
       const blockToDelete = parent[index];
       if (!blockToDelete) return;
@@ -325,6 +371,24 @@ export const useBlockManager = () => {
     return checkBlocks(data.value);
   };
 
+  const isStructureBlock = (block: Block): boolean => {
+    return block.type === 'structure' && Array.isArray(block.content) && block.content.length > 0;
+  };
+
+  const shouldDisplayPlaceholder = (
+    uuid: string,
+    position: 'top' | 'bottom',
+    drawerOpen: boolean | Ref<boolean>,
+    drawerView: string | null | Ref<string | null>,
+  ): boolean => {
+    return (
+      visiblePlaceholder.value.position === position &&
+      visiblePlaceholder.value.uuid === uuid &&
+      unref(drawerOpen) &&
+      unref(drawerView) === 'blocksList'
+    );
+  };
+
   return {
     currentBlock,
     currentBlockUuid,
@@ -338,17 +402,19 @@ export const useBlockManager = () => {
     isDragging: computed(() => dragState.isDragging),
     handleDragStart,
     handleDragEnd,
-    blockHasData,
     tabletEdit,
     deleteBlock,
     updateBlock,
     changeBlockPosition,
     isLastNonFooterBlock,
+    isFirstContentBlock,
     addNewBlock,
+    scrollIntoBlockView,
     handleEdit,
     visiblePlaceholder,
     togglePlaceholder,
     findOrDeleteBlockByUuid,
+    getRootParent,
     getBlockDepth,
     shouldLazyLoad,
     getLazyLoadKey,
@@ -356,5 +422,7 @@ export const useBlockManager = () => {
     getLazyLoadRef,
     showBottomAddInGrid,
     blockExistsOnPage,
+    isStructureBlock,
+    shouldDisplayPlaceholder,
   };
 };

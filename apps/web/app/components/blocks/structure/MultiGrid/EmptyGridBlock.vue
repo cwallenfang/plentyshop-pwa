@@ -1,7 +1,7 @@
 <template>
-  <div v-if="$isPreview && disableActions" class="flex w-full">
+  <div v-if="isEditMode" class="flex w-full">
     <div
-      v-if="drawerOpen && isActiveColumn"
+      v-if="siteConfigurationDrawerOpen && isActiveColumn"
       data-testid="active-empty-multicolumn"
       class="h-[196px] flex-1 border-2 border-dashed border-sky-400 bg-sky-50 p-6 flex flex-col items-center justify-center text-center"
     >
@@ -24,11 +24,10 @@
 import { SfIconAdd } from '@storefront-ui/vue';
 import type { EmptyGridBlockProps } from '~/components/blocks/structure/MultiGrid/types';
 
-const { $isPreview } = useNuxtApp();
-const { disableActions } = useEditor();
 const props = defineProps<EmptyGridBlockProps>();
+const { isEditMode } = useEditorState();
 const { multigridColumnUuid, updateMultigridColumnUuid, visiblePlaceholder } = useBlockManager();
-const { openDrawerWithView, drawerOpen } = useSiteConfiguration();
+const { openDrawerWithView, siteConfigurationDrawerOpen } = useSiteConfiguration();
 
 const isActiveColumn = computed(() => multigridColumnUuid.value === props.meta.uuid);
 

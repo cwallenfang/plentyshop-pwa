@@ -58,7 +58,7 @@
             {{ fieldsEmptyHintText }}
             (
             <a :href="learnMoreTextUrl" target="_blank" rel="noopener noreferrer" class="underline">
-              {{ t('learn-more') }}
+              {{ getEditorTranslation('learn-more') }}
             </a>
             ).
           </span>
@@ -126,8 +126,9 @@
       >
         <SfIconWarning class="mt-0.5 shrink-0 text-yellow-500" aria-hidden="true" />
         <span class="italic">
-          {{ t('image-slot-empty-hint-prefix') }}
-          <a :href="learnMoreUrl" target="_blank" rel="noopener noreferrer" class="underline"> {{ t('learn-more') }} </a
+          {{ getEditorTranslation('image-slot-empty-hint-prefix') }}
+          <a :href="learnMoreUrl" target="_blank" rel="noopener noreferrer" class="underline">
+            {{ getEditorTranslation('learn-more') }} </a
           >.
         </span>
       </div>
@@ -210,23 +211,21 @@
 
       <div class="py-2">
         <UiFormLabel class="mb-1">{{ getEditorTranslation('text-color-label') }}</UiFormLabel>
-
-        <SfInput v-model="categoryDataBlock.text.color" type="text">
-          <template #suffix>
-            <label
-              for="category-text-color"
-              :style="{ backgroundColor: categoryDataBlock.text.color }"
-              class="border border-[#a0a0a0] rounded-lg cursor-pointer"
-            >
-              <input
-                id="category-text-color"
-                v-model="categoryDataBlock.text.color"
-                type="color"
-                class="invisible w-8"
-              />
-            </label>
+        <EditorColorPicker v-model="categoryDataBlock.text.color" class="w-full">
+          <template #trigger="{ color, toggle }">
+            <SfInput v-model="categoryDataBlock.text.color" type="text">
+              <template #suffix>
+                <button
+                  type="button"
+                  class="border border-[#a0a0a0] rounded-lg cursor-pointer w-10 h-8"
+                  :style="{ backgroundColor: color }"
+                  @mousedown.stop
+                  @click.stop="toggle"
+                />
+              </template>
+            </SfInput>
           </template>
-        </SfInput>
+        </EditorColorPicker>
       </div>
 
       <div v-if="categoryDataBlock.displayCategoryImage !== 'off'" class="py-2">
@@ -239,18 +238,21 @@
 
       <div v-if="categoryDataBlock.text.background" class="py-2">
         <UiFormLabel class="mb-1">{{ getEditorTranslation('textbox-color-label') }}</UiFormLabel>
-
-        <SfInput v-model="categoryDataBlock.text.bgColor" type="text">
-          <template #suffix>
-            <label
-              for="text-bg-color"
-              :style="{ backgroundColor: categoryDataBlock.text.bgColor }"
-              class="border border-[#a0a0a0] rounded-lg cursor-pointer"
-            >
-              <input id="text-bg-color" v-model="categoryDataBlock.text.bgColor" type="color" class="invisible w-8" />
-            </label>
+        <EditorColorPicker v-model="categoryDataBlock.text.bgColor" class="w-full">
+          <template #trigger="{ color, toggle }">
+            <SfInput v-model="categoryDataBlock.text.bgColor" type="text">
+              <template #suffix>
+                <button
+                  type="button"
+                  class="border border-[#a0a0a0] rounded-lg cursor-pointer w-10 h-8"
+                  :style="{ backgroundColor: color }"
+                  @mousedown.stop
+                  @click.stop="toggle"
+                />
+              </template>
+            </SfInput>
           </template>
-        </SfInput>
+        </EditorColorPicker>
       </div>
 
       <div v-if="categoryDataBlock.text.background && categoryDataBlock.displayCategoryImage !== 'off'" class="py-2">
@@ -436,7 +438,7 @@
       <template #summary>
         <h2>{{ getEditorTranslation('layout-label') }}</h2>
       </template>
-
+      <EditorFullWidthToggle v-model="isFullWidth" :block-uuid="blockUuid" />
       <div
         class="py-2"
         :class="
@@ -484,11 +486,6 @@
             />
           </div>
         </div>
-        <div class="px-4 py-3">
-          <span class="typography-text-xs text-neutral-700">
-            {{ getEditorTranslation('spacing-around') }}
-          </span>
-        </div>
       </div>
     </UiAccordionItem>
   </div>
@@ -514,7 +511,6 @@ import draggable from 'vuedraggable/src/vuedraggable';
 const layoutOpen = ref(true);
 const textOpen = ref(true);
 const imageOpen = ref(true);
-const { t } = useI18n();
 
 const {
   learnMoreUrl,
@@ -526,6 +522,9 @@ const {
   fieldsEmptyHintText,
   clampBrightness,
 } = useCategoryData();
+
+const { blockUuid } = useSiteConfiguration();
+const { isFullWidth } = useFullWidthToggleForContent(categoryDataBlock);
 </script>
 
 <i18n lang="json">
@@ -535,7 +534,7 @@ const {
 
     "item-card-label": "Category text",
     "item-card-text": "Text display and order",
-    "item-card-tooltip": "You can manage the description texts in the backend under Images/Categories.",
+    "item-card-tooltip": "You can manage the descriptions of categories inside the PlentyONE Backend UI found under Item » Category.",
     "category-placeholder": "Category name",
     "category-name": "Category name",
     "category-description-1": "Category description 1",
@@ -543,7 +542,6 @@ const {
     "short-description": "Short description",
     "drag-reorder-aria": "Drag to reorder",
     "padding-label": "Padding",
-    "spacing-around": "Spacing around the text elements",
 
     "image-label": "Image",
     "display-category-image-label": "Display category image",
@@ -598,6 +596,8 @@ const {
     "layout-label": "Layout",
 
     "item-card-label": "Category text",
+    "item-card-text": "Text display and order",
+    "item-card-tooltip": "You can manage the descriptions of categories inside the PlentyONE Backend UI found under Item » Category.",
     "category-placeholder": "Category name",
     "category-name": "Category name",
     "category-description-1": "Category description 1",
@@ -605,7 +605,6 @@ const {
     "short-description": "Short description",
     "drag-reorder-aria": "Drag to reorder",
     "padding-label": "Padding",
-    "spacing-around": "Spacing around the text elements",
 
     "image-label": "Image",
     "display-category-image-label": "Display category image",

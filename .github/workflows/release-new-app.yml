@@ -13,6 +13,7 @@ jobs:
     # <--- WICHTIG: Nur im Original-Repo ausführen, nicht im Fork
     if: github.repository == 'ORIGINAL_OWNER/ORIGINAL_REPO'
 
+    environment: production
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v6

@@ -4,23 +4,7 @@
     :style="{ backgroundColor: props.content.text?.bgColor ?? '#f5f5f5' }"
     data-testid="newsletter-block"
   >
-    <h1
-      v-if="props.index === 0"
-      class="typography-display-3 md:typography-display-2 lg:typography-display-1 font-bold my-2 lg:leading-[4rem]"
-      data-testid="newsletter-title"
-      v-html="props.content.text?.title ?? t('newsletter.heading')"
-    />
-    <h2
-      v-if="props.index !== 0"
-      class="typography-headline-4 sm:typography-headline-3 font-bold mb-2"
-      data-testid="newsletter-title"
-      v-html="props.content.text?.title ?? t('newsletter.heading')"
-    />
-    <p
-      class="typography-text-sm sm:typography-text-base my-2 mb-4"
-      data-testid="newsletter-description"
-      v-html="props.content.text?.htmlDescription ?? t('newsletter.info')"
-    />
+    <TextContent v-bind="textContentProps" :test-id="'newsletter'" />
 
     <form class="mx-auto max-w-[550px] pt-2" novalidate @submit.prevent="onSubmit">
       <div
@@ -105,7 +89,7 @@
                   target="_blank"
                   class="focus:outline focus:outline-offset-2 focus:outline-2 outline-secondary-600 rounded"
                 >
-                  {{ t('privacyPolicy') }}
+                  {{ t('legal.privacyPolicy') }}
                 </SfLink>
               </template>
             </i18n-t>
@@ -152,7 +136,6 @@ import type { NewsletterSubscribeProps } from './types';
 const { subscribe, loading } = useNewsletter();
 const { send } = useNotification();
 const localePath = useLocalePath();
-const { t } = useI18n();
 const props = defineProps<NewsletterSubscribeProps>();
 const { getSetting } = useSiteSettings('cloudflareTurnstileApiSiteKey');
 const turnstileSiteKey = getSetting() ?? '';
@@ -160,20 +143,27 @@ const turnstileSiteKey = getSetting() ?? '';
 const turnstileElement = ref();
 const turnstileLoad = ref(false);
 const wrapperClass = 'focus-within:outline focus-within:outline-offset';
+const textContentProps = computed(() =>
+  mapToTextContentProps({
+    title: props.content.text?.title,
+    htmlDescription: props.content.text?.htmlDescription,
+    textAlignment: props.content.text?.textAlignment ?? 'center',
+  }),
+);
 
 const validationSchema = toTypedSchema(
   object({
     firstName: props.content.input?.nameIsRequired
-      ? string().required(t('errorMessages.newsletter.firstNameRequired')).default('')
+      ? string().required(t('error.newsletter.firstNameRequired')).default('')
       : string().optional().default(''),
     lastName: props.content.input?.nameIsRequired
-      ? string().required(t('errorMessages.newsletter.lastNameRequired')).default('')
+      ? string().required(t('error.newsletter.lastNameRequired')).default('')
       : string().optional().default(''),
-    email: string().email(t('errorMessages.email.valid')).required(t('errorMessages.email.required')).default(''),
-    privacyPolicy: boolean().oneOf([true], t('errorMessages.newsletter.termsRequired')).default(false),
+    email: string().email(t('error.email.valid')).required(t('error.email.required')).default(''),
+    privacyPolicy: boolean().oneOf([true], t('error.newsletter.termsRequired')).default(false),
     turnstile:
       turnstileSiteKey.length > 0
-        ? string().required(t('errorMessages.newsletter.turnstileRequired')).default('')
+        ? string().required(t('error.newsletter.turnstileRequired')).default('')
         : string().optional().default(''),
   }),
 );

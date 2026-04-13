@@ -14,10 +14,7 @@ const coreBlocks = import.meta.glob('@/components/**/blocks/**/*.vue', { import:
 
 const normalize = (path: string) => {
   const pop = path.split('/').pop();
-
-  if (pop) {
-    return pop.replace(/\.vue$/, '');
-  }
+  if (pop) return pop.replace(/\.vue$/, '');
   return path;
 };
 
@@ -29,4 +26,8 @@ Object.entries(customerBlocks).forEach(([path, loader]) => (blockLoaders[normali
 
 export const getBlockLoader = (name: string) => {
   return blockLoaders[name];
+};
+
+export const getBlockFormLoader = (name: string) => {
+  return blockLoaders[name + 'Form'];
 };

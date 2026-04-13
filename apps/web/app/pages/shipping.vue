@@ -4,15 +4,20 @@
 </template>
 
 <script setup lang="ts">
+import type { Locale } from '#i18n';
+
+defineI18nRoute({
+  locales: process.env.LANGUAGELIST?.split(',') as Locale[],
+});
+
 definePageMeta({
   pageType: 'static',
 });
 const { setPageMeta } = usePageMeta();
 const { getSetting } = useSiteSettings('shippingTextCategoryId');
-const { categoryTemplateData, fetchCategoryTemplate } = useCategoryTemplate();
+const { categoryTemplateData, fetchCategoryTemplate } = useBlockTemplates();
 
 await fetchCategoryTemplate(Number(getSetting()));
-const { t } = useI18n();
 
 const icon = 'page';
 setPageMeta(t('orderConfirmation.shipping'), icon);

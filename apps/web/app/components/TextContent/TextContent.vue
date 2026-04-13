@@ -1,32 +1,27 @@
 <template>
-  <div data-testid="text-content" :style="{ color: props.text?.color }" :class="['space-y-4', textAlignmentClass]">
-    <div v-if="text?.pretitle" data-testid="text-pretitle" class="text-xl font-bold mb-2" v-html="text.pretitle" />
-
-    <h1
-      v-if="text?.title && index === 0"
-      data-testid="text-title"
-      class="typography-display-3 md:typography-display-2 lg:typography-display-1 font-bold my-2 lg:leading-[4rem]"
-      v-html="text.title"
+  <div
+    :data-testid="props.testId ? 'text-content-' + props.testId : 'text-content'"
+    class="w-full"
+    :style="{ color: props.text?.color }"
+    :class="['space-y-4', textAlignmentClass]"
+  >
+    <div
+      v-if="props.text?.htmlDescription"
+      class="rte-prose rte-prose--render"
+      :data-testid="props.testId ? 'text-html-' + props.testId : 'text-html'"
+      :class="`rte-prose--${props.text?.textAlignment ?? 'left'}`"
+      v-html="renderedHtmlDescription"
     />
 
-    <h2
-      v-if="text?.title && index !== 0"
-      data-testid="text-title"
-      class="text-2xl font-semibold mb-4"
-      v-html="text.title"
-    />
-
-    <div v-if="text?.subtitle" data-testid="text-subtitle" class="text-lg font-semibold" v-html="text.subtitle" />
-    <div v-if="text?.htmlDescription" data-testid="text-html" class="text-base" v-html="text.htmlDescription" />
     <UiButton
-      v-if="button?.label && button?.link"
+      v-if="props.button?.label && props.button?.link"
       :tag="NuxtLink"
-      :to="localePath(button?.link ?? '')"
-      :variant="button?.variant ?? 'primary'"
-      data-testid="text-button"
-      class="mt-3 px-4 py-2"
+      :to="localePath(props.button.link)"
+      :variant="props.button.variant ?? 'primary'"
+      :data-testid="props.testId ? 'text-button-' + props.testId : 'text-button'"
+      class="mt-3 px-4 py-2 cursor-pointer"
     >
-      {{ button?.label }}
+      {{ props.button.label }}
     </UiButton>
   </div>
 </template>
@@ -36,8 +31,7 @@ import type { TextContentProps } from '~/components/TextContent/types';
 
 const props = defineProps<TextContentProps>();
 
-const localePath = useLocalePath();
-const NuxtLink = resolveComponent('NuxtLink');
+const renderedHtmlDescription = computed(() => decodeHtmlEntities(props.text?.htmlDescription));
 
 const textAlignmentClass = computed(() => {
   switch (props.text?.textAlignment) {
@@ -49,4 +43,7 @@ const textAlignmentClass = computed(() => {
       return 'text-left items-start';
   }
 });
+
+const localePath = useLocalePath();
+const NuxtLink = resolveComponent('NuxtLink');
 </script>
