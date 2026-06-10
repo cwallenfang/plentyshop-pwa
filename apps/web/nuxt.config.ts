@@ -10,10 +10,13 @@ import { FailOnLargeChunksPlugin, FailOnForbiddenDataInPublicFolderPlugin } from
 import { thirdPartyDeps, localPackageDeps } from './app/configuration/optimize-deps.config';
 import { seoConfig } from './app/configuration/seo.config';
 
+const isTestRuntime =
+  process.env.NODE_ENV === 'test' || process.env.VITEST === 'true' || process.env.NUXT_TEST === 'true';
+
 export default defineNuxtConfig({
   srcDir: 'app/',
   telemetry: false,
-  devtools: { enabled: true },
+  devtools: { enabled: process.env.NODE_ENV === 'development' },
   css: ['~/assets/richtext.css'],
   typescript: {
     typeCheck: false, // type checking runs via `npm run typecheck`, on build, and in CI (fitness-code-quality)
@@ -107,7 +110,7 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/fonts',
     '@nuxt/image',
-    '@nuxt/test-utils/module',
+    ...(isTestRuntime ? ['@nuxt/test-utils/module'] : []),
     '@nuxtjs/i18n',
     '@nuxtjs/tailwindcss',
     '@nuxtjs/turnstile',
