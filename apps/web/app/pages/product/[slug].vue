@@ -229,7 +229,7 @@ const observeCrossellingSectionSimilar = () => {
 
 const observeCrossellingSectionAccessory = () => {
   if (import.meta.client && crossellingProductsAccessory.value) {
-    const observer = new window.IntersectionObserver(
+    const observer = new globalThis.IntersectionObserver(
       (entries) => {
         const entry = entries[0];
         if (entry?.isIntersecting) {
@@ -270,14 +270,8 @@ onBeforeRouteLeave(() => {
 onNuxtReady(() => {
   observeCrossellingSectionSimilar();
   observeCrossellingSectionAccessory();
-  if (import.meta.client && useCallisto().isEnabled) {
-    variationWatchHandler = watch(variationId, async () => {
-      if (Number(productParams.variationId) !== variationId.value && variationId.value > 0) {
-        productParams.variationId = variationId.value;
-        await fetchProduct(productParams);
-        setCurrentProduct(productForEditor.value || ({} as Product));
-      }
-    });
+  if (useCallisto().isEnabled) {
+    variationWatchHandler = watch(variationId, handleVariationChange);
   }
 });
 </script>

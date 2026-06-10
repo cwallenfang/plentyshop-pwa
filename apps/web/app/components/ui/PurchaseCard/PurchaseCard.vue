@@ -264,6 +264,7 @@ const props = withDefaults(defineProps<PurchaseCardProps>(), {
       'price',
       'tags',
       'availability',
+      'starRating',
       'variationProperties',
       'orderProperties',
       'previewText',

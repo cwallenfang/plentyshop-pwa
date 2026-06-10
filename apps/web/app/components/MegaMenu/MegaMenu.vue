@@ -164,10 +164,11 @@
                   tag="button"
                   type="button"
                   class="border-b border-b-neutral-200 border-b-solid hover:bg-secondary-100"
+                  :aria-label="t('common.actions.back') + ' - ' + categoryTreeGetters.getName(activeMenu)"
                   @click="goBack()"
                 >
                   <div class="flex items-center">
-                    <SfIconArrowBack class="text-neutral-500" />
+                    <SfIconArrowBack aria-hidden="true" class="text-neutral-500" />
                     <p class="ml-5 font-medium">{{ categoryTreeGetters.getName(activeMenu) }}</p>
                   </div>
                 </SfListItem>
