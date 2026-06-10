@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Product } from '@plentymarkets/shop-api';
+import type { Product, ApiError } from '@plentymarkets/shop-api';
 import type { WatchStopHandle } from 'vue';
 import { productGetters } from '@plentymarkets/shop-api';
 import type { Locale } from '#i18n';
@@ -119,21 +119,11 @@ definePageMeta({
   type: 'product',
   isBlockified: true,
   identifier: 0,
+  cacheControl: getCacheControl(),
 });
-
-const CrossellingProductsAsync = defineAsyncComponent(
-  async () => await import('~/components/ProductCrossselling/ProductCrossselling.vue'),
-);
 
 const showRecommended = ref(false);
 const recommendedSection = ref<HTMLElement | null>(null);
-
-const showCrosssellingSimilar = ref(false);
-const crossellingProductsSimilar = ref<HTMLElement | null>(null);
-
-const showCrosssellingAccessory = ref(false);
-const crossellingProductsAccessory = ref<HTMLElement | null>(null);
-
 const productName = computed(() => productGetters.getName(product.value));
 const icon = 'sell';
 setPageMeta(productName.value, icon);
@@ -269,6 +259,20 @@ const observeCrossellingSectionAccessory = () => {
     observer.observe(crossellingProductsAccessory.value);
   }
 };
+
+async function handleVariationChange() {
+  if (Number(productParams.variationId) !== variationId.value && variationId.value > 0) {
+    try {
+      productParams.variationId = variationId.value;
+      await fetchProduct(productParams);
+      setCurrentProduct(productForEditor.value || ({} as Product));
+      await fetchReviews();
+      setProductMetaData(product.value);
+    } catch (error) {
+      useHandleError(error as ApiError);
+    }
+  }
+}
 
 onBeforeRouteLeave(() => {
   resetNotification();
