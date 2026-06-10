@@ -10,6 +10,10 @@ on:
 jobs:
   create-archive:
     runs-on: ubuntu-latest
+
+    # <--- WICHTIG: Nur im Original-Repo ausführen, nicht im Fork
+    if: github.repository == 'ORIGINAL_OWNER/ORIGINAL_REPO'
+
     environment: production
     steps:
       - name: Create deployment

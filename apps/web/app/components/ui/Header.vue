@@ -5,7 +5,7 @@
       <nav class="hidden ml-4 @md:flex @md:flex-row @md:flex-nowrap">
         <UiButton
           v-if="!isLanguageSelectOpen"
-          class="group relative hover:!bg-header-400 active:!bg-header-400 mr-1 -ml-0.5 rounded-md cursor-pointer"
+          class="group relative hover:!bg-header-400 active:!bg-header-400 mr-1 -ml-0.5 rounded-md cursor-pointer hidden"
           :aria-label="t('common.navigation.languageSelector')"
           variant="tertiary"
           :style="{ color: iconColor }"

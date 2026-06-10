@@ -31,7 +31,10 @@
           <PreferredDeliveryPackstationFinder v-if="countryHasDelivery" />
           <PreferredDelivery v-if="countryHasDelivery" />
           <UiDivider v-if="preferredDeliveryAvailable" class="w-screen @md:w-auto -mx-4 @md:mx-0" />
-          <CheckoutPayment :disabled="disableShippingPayment" @update:active-payment="handlePaymentMethodUpdate" />
+
+          <div v-for="(cartItem, index) in cart?.items" :key="cartItem.id">
+            <UiCartProductCard :cart-item="cartItem" :class="{ 'border-t': index === 0 }" />
+          </div>
         </div>
         <UiDivider class="w-screen @md:w-auto -mx-4 @md:mx-0" />
         <CustomerReference />
@@ -40,9 +43,7 @@
         <CheckoutGeneralTerms />
       </div>
       <div class="col-span-6 @xl:col-span-5">
-        <div v-for="(cartItem, index) in cart?.items" :key="cartItem.id">
-          <UiCartProductCard :cart-item="cartItem" :class="{ 'border-t': index === 0 }" />
-        </div>
+        <CheckoutPayment :disabled="disableShippingPayment" @update:active-payment="handlePaymentMethodUpdate" />
         <div class="relative @md:sticky @md:top-20 h-fit" :class="{ 'pointer-events-none opacity-50': cartLoading }">
           <SfLoaderCircular v-if="cartLoading" class="absolute top-[130px] right-0 left-0 m-auto z-loader" size="2xl" />
           <Coupon />
@@ -51,6 +52,9 @@
             <PaymentButtons />
             <ModuleComponentRendering area="checkout.afterBuyButton" />
           </OrderSummary>
+          <div class="mt-2">
+            <CheckoutGeneralTerms />
+          </div>
         </div>
       </div>
     </div>

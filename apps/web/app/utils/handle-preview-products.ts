@@ -4,12 +4,13 @@ import { fakeProductEN } from './facets/fakeProductEN';
 import { fakeProductDE } from './facets/fakeProductDE';
 
 import type { UseProductsState } from '~/composables/useProducts/types';
+import { useEditorState } from '~/composables';
 
 export const handlePreviewProducts = (state: Ref<UseProductsState>, lang: string) => {
   const { isInEditor } = useEditorState();
   if (!isInEditor.value || state.value.data.products.length > 0) return;
 
-  if (state.value.data.category.type === 'item') {
+  if (state.value.data.category?.type === 'item') {
     const fakeFacetCall = lang === 'de' ? fakeFacetCallDE.data : fakeFacetCallEN.data;
 
     state.value.data = {

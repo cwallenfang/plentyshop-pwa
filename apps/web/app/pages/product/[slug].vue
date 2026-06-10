@@ -1,6 +1,76 @@
 <template>
   <NuxtLayout name="default" :breadcrumbs="breadcrumbs">
-    <EditableBlocks :identifier="'0'" :type="'product'" prevent-blocks-request />
+    <EditablePage v-if="config.enableProductEditing" :identifier="'0'" :type="'product'" prevent-blocks-request />
+
+    <NarrowContainer v-else>
+      <div class="md:grid gap-x-6 grid-areas-product-page grid-cols-product-page relative">
+        <section class="grid-in-left-top md:h-full xl:max-h-[700px] relative">
+          <ProductEprel :product="product" :size="'xxl'" />
+          <Gallery :images="addModernImageExtensionForGallery(productGetters.getGallery(product))" :index="0" />
+        </section>
+        <section class="mb-10 grid-in-right md:mb-0">
+          <UiPurchaseCard v-if="product" :product="product" :review-average="countsProductReviews" />
+        </section>
+        <section class="grid-in-left-bottom md:mt-8">
+          <UiDivider class="mt-4 mb-2 md:mt-8" />
+          <NuxtLazyHydrate when-visible>
+            <ProductAccordion v-if="product" :product="product" />
+          </NuxtLazyHydrate>
+          <ReviewsAccordion
+            v-if="product"
+            :product="product"
+            :total-reviews="reviewGetters.getTotalReviews(countsProductReviews)"
+          />
+          <div class="p-4 mb-6">
+            <UiLazyContentDrawer :categoryid="725" :title="'Zahlungsinformationen'" />
+          </div>
+          <div class="p-4 flex">
+            <p class="font-bold leading-6 cursor-pointer" data-testid="open-manufacturer-drawer" @click="openDrawer()">
+              <span>{{ t('legalDetails') }}</span>
+              <SfIconChevronRight />
+            </p>
+          </div>
+        </section>
+      </div>
+
+      <section ref="crossellingProductsSimilar" class="mx-4 mt-8 mb-8">
+        <component
+          :is="CrossellingProductsAsync"
+          v-if="showCrosssellingSimilar"
+          :cross-selling-relation="'Similar'"
+          :product="product"
+          :show-title="true"
+        />
+      </section>
+      <section ref="crossellingProductsAccessory" class="mx-4 mt-8 mb-8">
+        <component
+          :is="CrossellingProductsAsync"
+          v-if="showCrosssellingAccessory"
+          :cross-selling-relation="'Accessory'"
+          :product="product"
+          :show-title="true"
+        />
+      </section>
+      <section ref="crossellingProductsAccessory" class="mx-4 mt-8 mb-8">
+        <component
+          :is="CrossellingProductsAsync"
+          v-if="showCrosssellingAccessory"
+          :cross-selling-relation="'Bundle'"
+          :product="product"
+          :show-title="true"
+        />
+      </section>
+      <section ref="crossellingProductsAccessory" class="mx-4 mt-8 mb-8">
+        <component
+          :is="CrossellingProductsAsync"
+          v-if="showCrosssellingAccessory"
+          :cross-selling-relation="'ReplacementPart'"
+          :product="product"
+          :show-title="true"
+        />
+      </section>
+    </NarrowContainer>
+
     <UiReviewModal />
     <ProductLegalDetailsDrawer v-if="open" :product="product" />
   </NuxtLayout>
@@ -9,7 +79,7 @@
 <script setup lang="ts">
 import type { Product, ApiError } from '@plentymarkets/shop-api';
 import type { WatchStopHandle } from 'vue';
-import { productGetters } from '@plentymarkets/shop-api';
+import { productGetters, reviewGetters } from '@plentymarkets/shop-api';
 import type { Locale } from '#i18n';
 
 defineI18nRoute({
@@ -17,16 +87,18 @@ defineI18nRoute({
 });
 
 const route = useRoute();
+const config = useRuntimeConfig().public;
 const { setCurrentProduct } = useProducts();
 const { setBlocksListContext } = useBlocksList();
 const { setProductMetaData, setProductRobotsMetaData, setProductCanonicalMetaData } = useStructuredData();
+const { addModernImageExtensionForGallery } = useModernImage();
 const { buildProductLanguagePath } = useLocalization();
 const { productParams, productId } = createProductParams(route.params);
 const { productForEditor, fetchProduct, setProductMeta, setBreadcrumbs, breadcrumbs } = useProduct(productId);
 const product = productForEditor;
 const { disableActions } = useEditor();
-const { fetchProductReviews, fetchProductAuthenticatedReviews } = useProductReviews(Number(productId));
-const { open } = useProductLegalDetailsDrawer();
+const { fetchProductReviews, fetchProductAuthenticatedReviews, data: productReviews } = useProductReviews(Number(productId));
+const { open, openDrawer } = useProductLegalDetailsDrawer();
 const { setPageMeta } = usePageMeta();
 const { resetNotification } = useEditModeNotification(disableActions);
 const { isAuthorized } = useCustomer();
@@ -45,8 +117,17 @@ definePageMeta({
   cacheControl: getCacheControl(),
 });
 
-const showRecommended = ref(false);
-const recommendedSection = ref<HTMLElement | null>(null);
+const CrossellingProductsAsync = defineAsyncComponent(
+  async () => await import('~/components/ProductCrossselling/ProductCrossselling.vue'),
+);
+
+const showCrosssellingSimilar = ref(false);
+const crossellingProductsSimilar = ref<HTMLElement | null>(null);
+
+const showCrosssellingAccessory = ref(false);
+const crossellingProductsAccessory = ref<HTMLElement | null>(null);
+
+const countsProductReviews = computed(() => productReviews.value?.counts ?? []);
 const productName = computed(() => productGetters.getName(product.value));
 const icon = 'sell';
 setPageMeta(productName.value, icon);
@@ -127,13 +208,13 @@ watch(
   { immediate: true },
 );
 
-const observeRecommendedSection = () => {
-  if (import.meta.client && recommendedSection.value) {
-    const observer = new globalThis.IntersectionObserver(
+const observeCrossellingSectionSimilar = () => {
+  if (import.meta.client && crossellingProductsSimilar.value) {
+    const observer = new window.IntersectionObserver(
       (entries) => {
         const entry = entries[0];
         if (entry?.isIntersecting) {
-          showRecommended.value = true;
+          showCrosssellingSimilar.value = true;
           observer.disconnect();
         }
       },
@@ -142,7 +223,26 @@ const observeRecommendedSection = () => {
         rootMargin: '0px 0px 250px 0px',
       },
     );
-    observer.observe(recommendedSection.value);
+    observer.observe(crossellingProductsSimilar.value);
+  }
+};
+
+const observeCrossellingSectionAccessory = () => {
+  if (import.meta.client && crossellingProductsAccessory.value) {
+    const observer = new globalThis.IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry?.isIntersecting) {
+          showCrosssellingAccessory.value = true;
+          observer.disconnect();
+        }
+      },
+      {
+        threshold: 0,
+        rootMargin: '0px 0px 250px 0px',
+      },
+    );
+    observer.observe(crossellingProductsAccessory.value);
   }
 };
 
@@ -168,8 +268,8 @@ onBeforeRouteLeave(() => {
 });
 
 onNuxtReady(() => {
-  observeRecommendedSection();
-
+  observeCrossellingSectionSimilar();
+  observeCrossellingSectionAccessory();
   if (useCallisto().isEnabled) {
     variationWatchHandler = watch(variationId, handleVariationChange);
   }

@@ -8,6 +8,7 @@ import settingsConfig from './app/configuration/settings.config';
 import featureFlagsConfig from './app/configuration/feature-flags.config';
 import { FailOnLargeChunksPlugin, FailOnForbiddenDataInPublicFolderPlugin } from './app/configuration/vite.config';
 import { thirdPartyDeps, localPackageDeps } from './app/configuration/optimize-deps.config';
+import { seoConfig } from './app/configuration/seo.config';
 
 export default defineNuxtConfig({
   srcDir: 'app/',
@@ -89,6 +90,10 @@ export default defineNuxtConfig({
       disabledEditorSettings: process.env?.ENABLE_ALL_EDITOR_SETTINGS === '1' ? [] : ['shop-search'],
       cookieGroups: cookieConfig,
       turnstileSiteKey: process.env?.CLOUDFLARETURNSTILEAPISITEKEY ?? '',
+      enableGoogleSiteVerification:
+        seoConfig.enableGoogleSiteVerification || process.env.NUXT_PUBLIC_ENABLE_GOOGLE_SITE_VERIFICATION || 'false',
+      googleSiteVerification:
+        seoConfig.googleSiteVerification || process.env.NUXT_PUBLIC_GOOGLE_SITE_VERIFICATION || '',
       noCache: process.env.NO_CACHE || '',
       configId: process.env.CONFIG_ID || '',
       ...settingsConfig,

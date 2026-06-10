@@ -1,4 +1,4 @@
-import type { FacetSearchCriteria, Product, Facet } from '@plentymarkets/shop-api';
+import type { FacetSearchCriteria, Product, Facet, Block } from '@plentymarkets/shop-api';
 import { defaults, type SetCurrentProduct } from '~/composables';
 import type {
   UseProductsState,
@@ -18,6 +18,8 @@ import { fakeFacetCallDE } from '~/utils/facets/fakeFacetCallDE';
  * ```
  */
 export const useProducts: UseProductsReturn = (category = '') => {
+  const { setDefaultTemplate } = useBlocks();
+
   const state = useState<UseProductsState>(`useProducts${category}`, () => ({
     data: {} as Facet,
     loading: false,
@@ -59,6 +61,8 @@ export const useProducts: UseProductsReturn = (category = '') => {
       data.value.data.pagination.perPageOptions = defaults.PER_PAGE_STEPS;
       state.value.data = data.value.data;
       handlePreviewProducts(state, $i18n.locale.value);
+      const facetWithBlocks = state.value.data as Facet & { blocks?: Block[] };
+      setDefaultTemplate(facetWithBlocks.blocks ?? []);
     }
 
     state.value.loading = false;

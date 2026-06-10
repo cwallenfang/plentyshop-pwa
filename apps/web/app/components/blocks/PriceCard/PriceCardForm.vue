@@ -187,6 +187,7 @@ const fieldLabels = {
   quantityAndAddToCart: getEditorTranslation('field-quantityAndAddToCart'),
   itemText: getEditorTranslation('field-itemText'),
   technicalData: getEditorTranslation('field-technicalData'),
+  bulletPoints: getEditorTranslation('field-bulletPoints'),
 };
 
 const cardOpen = ref(true);
@@ -228,6 +229,7 @@ const { wishlistSizeModel, wishlistSizeOptions } = useEditorOptionsTabs(
     "field-quantityAndAddToCart": "Quantity and add to cart",
     "field-itemText": "Item text",
     "field-technicalData": "Technical data",
+    "field-bulletPoints": "Bullet Points data",
 
     "texts-label": "Texts",
     "pretitle-label": "Pre-title",
@@ -280,6 +282,7 @@ const { wishlistSizeModel, wishlistSizeOptions } = useEditorOptionsTabs(
     "field-quantityAndAddToCart": "Quantity and add to cart",
     "field-itemText": "Item text",
     "field-technicalData": "Technical data",
+    "field-bulletPoints": "Bullet Points data",
 
     "texts-label": "Texts",
     "pretitle-label": "Pre-title",

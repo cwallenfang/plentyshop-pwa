@@ -121,10 +121,15 @@ import {
 import type { FilterProps } from '~/components/CategoryFilters/types';
 import type { Filters } from '~/composables';
 import type { SortFilterContent } from '~/components/blocks/SortFilter/types';
+import type { FilterOpenState } from './types';
 const { getFacetsFromURL, updateFilters, updatePrices } = useCategoryFilter();
 
-const open = ref(true);
-const props = defineProps<FilterProps>();
+// const props = defineProps<FilterProps & FilterOpenState>();
+const props = withDefaults(defineProps<FilterProps & FilterOpenState>(), {
+  isopen: true,
+});
+const open = ref(props.isopen);
+
 const filters = facetGetters.getFilters(props.facet ?? ({} as FilterGroup)) as Filter[];
 const models = ref({} as Filters);
 const configuration = computed(() => props.configuration || ({} as SortFilterContent));

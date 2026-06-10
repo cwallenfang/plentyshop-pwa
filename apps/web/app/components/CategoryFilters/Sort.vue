@@ -1,11 +1,13 @@
 <template>
   <div class="flex flex-col gap-2">
     <CategoryFiltersSortSections
-      v-for="facet in visibleFacets"
+      v-for="(facet, index) in visibleFacets"
       :key="facet.id"
       :facet="facet"
       :configuration="content"
       :render-key="renderKey"
+      :isopen="index < 4 || props.forceOpen"
+      :index="index + 1"
       v-bind="customizedFiltersProps"
     />
 
@@ -28,8 +30,9 @@ import { facetGetters } from '@plentymarkets/shop-api';
 import { SfIconExpandMore } from '@storefront-ui/vue';
 import type { CategoryFiltersProps } from '~/components/CategoryFilters/types';
 import type { SortFilterContent } from '~/components/blocks/SortFilter/types';
+import type { FilterOpenState } from './types';
 
-const props = defineProps<CategoryFiltersProps>();
+const props = defineProps<CategoryFiltersProps & FilterOpenState>();
 
 const isExpanded = ref(false);
 

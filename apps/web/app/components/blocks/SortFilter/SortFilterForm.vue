@@ -162,16 +162,16 @@ const fieldLabels: Record<string, string> = {
     "layout-label": "Layout"
   },
   "de": {
-    "display-and-order-label": "Display and order",
+    "display-and-order-label": "Anzeige und Bestellung",
 
-    "category": "Category",
-    "sortBy": "Sort by",
-    "perPage": "Per page",
-    "itemRating": "Item rating",
-    "manufacturer": "Manufacturer",
-    "price": "Price",
-    "availability": "Availability",
-    "customizedFilters": "Customized filters",
+    "category": "Kategorie",
+    "sortBy": "Sortieren nach",
+    "perPage": "Pro Seite",
+    "itemRating": "Artikelbewertung",
+    "manufacturer": "Hersteller",
+    "price": "Preis",
+    "availability": "Verfügbarkeit",
+    "customizedFilters": "Individuell angepasste Filter",
 
     "enable-filters-label": "Enable filters",
     "show-filters-immediately-label": "Show all customized filters immediately",
