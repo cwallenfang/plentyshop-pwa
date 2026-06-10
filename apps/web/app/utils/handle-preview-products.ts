@@ -4,6 +4,7 @@ import { fakeProductEN } from './facets/fakeProductEN';
 import { fakeProductDE } from './facets/fakeProductDE';
 
 import type { UseProductsState } from '~/composables/useProducts/types';
+import { useEditorState } from '~/composables';
 
 export const handlePreviewProducts = (state: Ref<UseProductsState>, lang: string) => {
   const { isInEditor } = useEditorState();
