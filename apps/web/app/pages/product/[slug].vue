@@ -33,13 +33,6 @@
         </section>
       </div>
 
-      <section ref="recommendedSection" class="mx-4 mt-8 mb-8 hidden">
-        <component
-          :is="RecommendedProductsAsync"
-          v-if="showRecommended"
-          :category-id="productGetters.getCategoryIds(product)[0] ?? ''"
-        />
-      </section>
       <section ref="crossellingProductsSimilar" class="mx-4 mt-8 mb-8">
         <component
           :is="CrossellingProductsAsync"
@@ -86,7 +79,7 @@
 <script setup lang="ts">
 import type { Product, ApiError } from '@plentymarkets/shop-api';
 import type { WatchStopHandle } from 'vue';
-import { productGetters } from '@plentymarkets/shop-api';
+import { productGetters, reviewGetters } from '@plentymarkets/shop-api';
 import type { Locale } from '#i18n';
 
 defineI18nRoute({
@@ -94,16 +87,18 @@ defineI18nRoute({
 });
 
 const route = useRoute();
+const config = useRuntimeConfig().public;
 const { setCurrentProduct } = useProducts();
 const { setBlocksListContext } = useBlocksList();
 const { setProductMetaData, setProductRobotsMetaData, setProductCanonicalMetaData } = useStructuredData();
+const { addModernImageExtensionForGallery } = useModernImage();
 const { buildProductLanguagePath } = useLocalization();
 const { productParams, productId } = createProductParams(route.params);
 const { productForEditor, fetchProduct, setProductMeta, setBreadcrumbs, breadcrumbs } = useProduct(productId);
 const product = productForEditor;
 const { disableActions } = useEditor();
-const { fetchProductReviews, fetchProductAuthenticatedReviews } = useProductReviews(Number(productId));
-const { open } = useProductLegalDetailsDrawer();
+const { fetchProductReviews, fetchProductAuthenticatedReviews, data: productReviews } = useProductReviews(Number(productId));
+const { open, openDrawer } = useProductLegalDetailsDrawer();
 const { setPageMeta } = usePageMeta();
 const { resetNotification } = useEditModeNotification(disableActions);
 const { isAuthorized } = useCustomer();
@@ -122,8 +117,17 @@ definePageMeta({
   cacheControl: getCacheControl(),
 });
 
-const showRecommended = ref(false);
-const recommendedSection = ref<HTMLElement | null>(null);
+const CrossellingProductsAsync = defineAsyncComponent(
+  async () => await import('~/components/ProductCrossselling/ProductCrossselling.vue'),
+);
+
+const showCrosssellingSimilar = ref(false);
+const crossellingProductsSimilar = ref<HTMLElement | null>(null);
+
+const showCrosssellingAccessory = ref(false);
+const crossellingProductsAccessory = ref<HTMLElement | null>(null);
+
+const countsProductReviews = computed(() => productReviews.value?.counts ?? []);
 const productName = computed(() => productGetters.getName(product.value));
 const icon = 'sell';
 setPageMeta(productName.value, icon);
@@ -204,24 +208,6 @@ watch(
   { immediate: true },
 );
 
-const observeRecommendedSection = () => {
-  if (import.meta.client && recommendedSection.value) {
-    const observer = new window.IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry?.isIntersecting) {
-          showRecommended.value = true;
-          observer.disconnect();
-        }
-      },
-      {
-        threshold: 0,
-        rootMargin: '0px 0px 250px 0px',
-      },
-    );
-    observer.observe(recommendedSection.value);
-  }
-};
 const observeCrossellingSectionSimilar = () => {
   if (import.meta.client && crossellingProductsSimilar.value) {
     const observer = new window.IntersectionObserver(
@@ -282,7 +268,6 @@ onBeforeRouteLeave(() => {
 });
 
 onNuxtReady(() => {
-  observeRecommendedSection();
   observeCrossellingSectionSimilar();
   observeCrossellingSectionAccessory();
   if (import.meta.client && useCallisto().isEnabled) {
