@@ -1,6 +1,6 @@
 <template>
   <div
-    class="page-search z-popover absolute p-2 top-full mt-2 bg-white shadow-lg rounded-lg border border-gray-200 overflow-hidden w-[400px] flex flex-col"
+    class="page-search absolute p-2 top-full mt-2 bg-white shadow-lg rounded-lg border border-gray-200 overflow-hidden w-[400px] flex flex-col"
     data-testid="page-search"
   >
     <div>
@@ -43,7 +43,6 @@
 </template>
 
 <script lang="ts" setup>
-import { flattenPages } from '~/utils/pages';
 import Multiselect from 'vue-multiselect';
 import 'vue-multiselect/dist/vue-multiselect.min.css';
 

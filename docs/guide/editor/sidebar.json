@@ -22,6 +22,10 @@
       {
         "text": "Rich text editor extension",
         "link": "/guide/editor/rte-custom-extensions.md"
+      },
+      {
+        "text": "Enable editor mode locally",
+        "link": "/guide/editor/editor-mode.md"
       }
     ]
   },
@@ -48,6 +52,10 @@
         {
           "text": "Structure vs. Content Form",
           "link": "/guide/editor/blocks-structure-vs-content"
+        },
+        {
+          "text": "Discovery and overrides",
+          "link": "/guide/editor/blocks-discovery"
         }
         ]
       },

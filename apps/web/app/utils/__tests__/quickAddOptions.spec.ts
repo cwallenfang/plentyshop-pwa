@@ -27,8 +27,8 @@ describe('headerQuickAddOptions', () => {
     expect(headerQuickAddOptions.map((option) => option.category)).toEqual(['header', 'header', 'header']);
   });
 
-  it('should have sequential variationIndex values', () => {
-    expect(headerQuickAddOptions.map((option) => option.variationIndex)).toEqual([0, 1, 2]);
+  it('should have variationIndex values in descending order', () => {
+    expect(headerQuickAddOptions.map((option) => option.variationIndex)).toEqual([2, 1, 0]);
   });
 
   it('should use getBlockDisplayName for labels', () => {
@@ -79,5 +79,23 @@ describe('multiGridQuickAddOptions', () => {
     const gridOption = multiGridQuickAddOptions.find((o) => o.category === 'row');
     expect(gridOption?.type).toBe('row');
     expect(gridOption?.label).toBe('Grid');
+  });
+});
+
+describe('detailsListQuickAddOptions', () => {
+  it('should contain 2 options', () => {
+    expect(detailsListQuickAddOptions).toHaveLength(2);
+  });
+
+  it('should have Image and TextCard blocks', () => {
+    expect(detailsListQuickAddOptions.map((option) => option.blockName)).toEqual(['Image', 'TextCard']);
+  });
+
+  it('should have correct categories', () => {
+    expect(detailsListQuickAddOptions.map((option) => option.category)).toEqual(['image', 'text']);
+  });
+
+  it('should all have variationIndex 0', () => {
+    expect(detailsListQuickAddOptions.map((option) => option.variationIndex)).toEqual([0, 0]);
   });
 });

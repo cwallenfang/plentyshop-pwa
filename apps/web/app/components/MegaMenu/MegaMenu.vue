@@ -230,7 +230,6 @@ import {
 import type { SfDrawerPlacement } from '@storefront-ui/vue';
 import { unrefElement } from '@vueuse/core';
 import { type CategoryTreeItem, categoryTreeGetters } from '@plentymarkets/shop-api';
-import { paths } from '~/utils/paths';
 import type { MegaMenuProps } from '~/components/MegaMenu/types';
 
 const props = defineProps<MegaMenuProps>();
@@ -238,7 +237,7 @@ const NuxtLink = resolveComponent('NuxtLink');
 
 const placement = ref<`${SfDrawerPlacement}`>('left');
 const viewport = useViewport();
-const localePath = useLocalePath();
+const localePath = useLocalizedPath();
 const { buildCategoryMenuLink } = useLocalization();
 const router = useRouter();
 const { close, open, isOpen, activeNode, category, setCategory } = useMegaMenu();

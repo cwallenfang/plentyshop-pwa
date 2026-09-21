@@ -92,7 +92,7 @@ const { setCurrentProduct } = useProducts();
 const { setBlocksListContext } = useBlocksList();
 const { setProductMetaData, setProductRobotsMetaData, setProductCanonicalMetaData } = useStructuredData();
 const { addModernImageExtensionForGallery } = useModernImage();
-const { buildProductLanguagePath } = useLocalization();
+const localePath = useLocalizedPath();
 const { productParams, productId } = createProductParams(route.params);
 const { productForEditor, fetchProduct, setProductMeta, setBreadcrumbs, breadcrumbs } = useProduct(productId);
 const product = productForEditor;
@@ -103,6 +103,7 @@ const { setPageMeta } = usePageMeta();
 const { resetNotification } = useEditModeNotification(disableActions);
 const { isAuthorized } = useCustomer();
 const { variationId } = useProductAttributes();
+const { addLastSeen } = useLastSeen();
 let variationWatchHandler: WatchStopHandle | undefined;
 
 definePageMeta({
@@ -151,6 +152,7 @@ setCurrentProduct(productForEditor.value || ({} as Product));
 setProductMeta();
 setBlocksListContext('product');
 setBreadcrumbs();
+addLastSeen(product.value);
 
 async function fetchReviews() {
   const productVariationId = productGetters.getVariationId(product.value);
@@ -178,9 +180,7 @@ watch(
   (value, oldValue) => {
     if (value !== oldValue) {
       navigateTo({
-        path: buildProductLanguagePath(
-          `/${productGetters.getUrlPath(product.value)}_${productGetters.getItemId(product.value)}`,
-        ),
+        path: localePath(`/${productGetters.getUrlPath(product.value)}_${productGetters.getItemId(product.value)}`),
         query: route.query,
         replace: true,
       });

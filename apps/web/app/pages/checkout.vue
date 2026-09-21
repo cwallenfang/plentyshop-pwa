@@ -49,8 +49,11 @@
           <Coupon />
           <OrderSummary v-if="cart" :cart="cart" class="mt-4">
             <CheckoutExportDeliveryHint v-if="cart.isExportDelivery" />
-            <PaymentButtons />
+            <ClientOnly>
+              <PaymentButtons />
+            </ClientOnly>
             <ModuleComponentRendering area="checkout.afterBuyButton" />
+            <GuaranteeNotice v-if="showGuaranteeNotice" />
           </OrderSummary>
           <div class="mt-2">
             <CheckoutGeneralTerms />
@@ -78,7 +81,7 @@ definePageMeta({
 });
 
 const { send } = useNotification();
-const localePath = useLocalePath();
+const localePath = useLocalizedPath();
 const { emit } = usePlentyEvent();
 const { countryHasDelivery, hasCheckoutAddress } = useCheckoutAddress(AddressType.Shipping);
 const checkoutReady = ref(false);
@@ -99,6 +102,10 @@ const { paymentLoading, shippingLoading, handleShippingMethodUpdate, handlePayme
   useCheckoutPagePaymentAndShipping();
 
 emit('frontend:beginCheckout', cart.value);
+if (import.meta.client) useLogEvent().logOpeningCheckout();
+
+const isGuaranteeNoticeEnabled = useFeatureFlag('shopPwaEnableEu2025-1960', false);
+const showGuaranteeNotice = computed(() => isGuaranteeNoticeEnabled.value);
 
 const checkPayPalPaymentsEligible = async () => {
   if (import.meta.client) {
@@ -132,7 +139,7 @@ onNuxtReady(async () => {
 });
 
 const disableShippingPayment = computed(() => shippingLoading.value || paymentLoading.value);
-const { processingOrder } = useProcessingOrder();
+const { createOrderLoading: processingOrder } = useDynamicPaymentButtons();
 
 watch(cartIsEmpty, async () => {
   if (!processingOrder.value) {

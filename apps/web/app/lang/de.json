@@ -336,6 +336,13 @@
     },
     "googlePay": {
       "paymentInProgress": "Zahlung in Bearbeitung..."
+    },
+    "guaranteeNotice": "Ihre gesetzlichen Gewährleistungsrechte"
+  },
+  "guaranteeLabels": {
+    "area": {
+      "close": "Details zur Haltbarkeitsgarantie schließen",
+      "open": "Details zur Haltbarkeitsgarantie öffnen"
     }
   },
   "customAssets": {
@@ -353,6 +360,7 @@
       "back": "Zurück",
       "browseProducts": "Produkte durchstöbern",
       "buy": "Kaufen",
+      "pay": "Bezahlen",
       "cancelOrder": "Kauf abbrechen",
       "clear": "Zurücksetzen",
       "clearAll": "Alles zurücksetzen",
@@ -484,7 +492,8 @@
     "asterixHint": "markierte Felder sind Pflichtfelder",
     "orderIdInvalid": "Bitte geben Sie eine gültige Auftragsnummer ein.",
     "misConfigured": "Unser Widerrufsformular ist aufgrund einer fehlenden Konfiguration vorübergehend deaktiviert. Bitte schauen Sie später noch einmal vorbei oder kontaktieren Sie uns über alternative Kontaktmöglichkeiten.",
-    "success": "Ihr Widerruf wurde erfolgreich übermittelt. Wir haben soeben eine Bestätigungs-E-Mail mit allen Details an {email} gesendet."
+    "success": "Ihr Widerruf wurde erfolgreich übermittelt. Wir haben soeben eine Bestätigungs-E-Mail mit allen Details an {email} gesendet.",
+    "privacyPolicy": "Es gilt unsere {privacyPolicy}."
   },
   "CookieBar": {
     "about": {
@@ -867,6 +876,13 @@
     "confirmation": {
       "newsletterOptInMessage": "Ihre E-Mail-Adresse wurde bestätigt.",
       "newsletterOptInMessageError": "Beim Bestätigen Ihrer E-Mail ist ein Fehler aufgetreten."
+    },
+    "unsubscribe": {
+      "label": "Newsletter abbestellen",
+      "heading": "Newsletter abbestellen",
+      "info": "Geben Sie Ihre E-Mail-Adresse ein, um den Newsletter abzubestellen.",
+      "submit": "Abbestellen",
+      "success": "Sie wurden erfolgreich vom Newsletter abgemeldet."
     }
   },
   "offers": {
@@ -888,7 +904,8 @@
     "successHeader": "Vielen Dank für Ihre Bestellung!",
     "successImageAlt": "Bild, das erklärt das die Bestellung erfolgreich war",
     "successMessage": "Ihre Bestellung wurde erfolgreich abgeschlossen.",
-    "successReturnHeader": "Vielen Dank für Ihre Retoure!"
+    "successReturnHeader": "Vielen Dank für Ihre Retoure!",
+    "rebate": "Rabatt"
   },
   "orderConfirmation": {
     "confirmationSendTo": "Eine Bestätigung mit allen Details wurde an {email} gesendet",
@@ -951,7 +968,8 @@
     "unbrandedCvv": "Kartenprüfnummer",
     "unbrandedExpirationDate": "Ablaufdatum",
     "unbrandedNameOnCard": "Karteninhaber",
-    "unbrandedPay": "Bezahlen"
+    "unbrandedPay": "Bezahlen",
+    "methodNotSupported": "Die ausgewählte Zahlungsmethode wird aktuell nicht unterstützt. Bitte wählen Sie eine andere Zahlungsmethode aus."
   },
   "PreferredDelivery": {
     "general": {
@@ -1016,9 +1034,12 @@
     }
   },
   "previewModeBar": {
+    "configId": "Konfigurations-ID:",
     "exitEditor": "Editor verlassen und zum Liveshop wechseln",
+    "exitPreviewMode": "Vorschaumodus beenden",
     "exitWithoutSaving": "Ohne Speichern verlassen",
-    "label": "Steuerelemente für Editor",
+    "editorLabel": "Steuerelemente für den Editor",
+    "previewLabel": "Steuerelemente für die Vorschau",
     "saveAndExit": "Speichern und verlassen",
     "title": "Editor verlassen und zum Liveshop wechseln?",
     "unsavedChangesWarning": "Es gibt ungespeicherte Änderungen."

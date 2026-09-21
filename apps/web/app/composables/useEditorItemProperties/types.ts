@@ -20,5 +20,5 @@ export interface UseEditorItemProperties {
   toggleGroup: (id: number) => void;
   toggleSelection: (propId: number, field: 'name' | 'value', checked: boolean) => void;
   toggleGroupItemSelection: (groupId: number, field: 'name', checked: boolean) => void;
-  insertSelected: () => string[];
+  insertSelected: () => PropertyPlaceholderToken[];
 }

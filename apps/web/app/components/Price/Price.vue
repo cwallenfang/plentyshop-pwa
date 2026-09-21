@@ -9,9 +9,9 @@
     >
       -{{ discountPercent }}%
     </span>
-    <span class="mr-2 text-secondary-500 font-bold text-2xl" data-testid="price">
+    <span class="mr-2 text-secondary-500 font-bold" :class="props.size === 'sm' ? 'typography-text-sm @sm:typography-text-lg' : 'text-2xl'" :data-testid="props.testId">
       <span>{{ format(price) }}</span>
-      <span>{{ t('common.labels.asterisk') }} </span>
+      <span v-if="props.displayVatHint">{{ t('common.labels.asterisk') }}</span>
     </span>
   </div>
 </template>
@@ -19,7 +19,11 @@
 <script setup lang="ts">
 import type { PriceProps } from '~/components/Price/types';
 
-const props = defineProps<PriceProps>();
+const props = withDefaults(defineProps<PriceProps>(), {
+  displayVatHint: true,
+  size: 'base',
+  testId: 'price',
+});
 
 const { format } = usePriceFormatter();
 

@@ -6,7 +6,6 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
 import TextAlign from '@tiptap/extension-text-align';
-import type { RteCommand, UseRichTextEditorArgs } from '~/composables/useRichTextEditor/types';
 import { setupRichTextEditorExpansion } from './helpers/expansion';
 import { setupRichTextEditorBlocks } from './helpers/blocks';
 import { setupRichTextEditorColors } from './helpers/colors';
@@ -21,6 +20,10 @@ import { AtomSelectionDecoration } from './helpers/atomSelectionDecoration';
 import Placeholder from '@tiptap/extension-placeholder';
 import Emoji, { emojis } from '@tiptap/extension-emoji';
 import { getMarkRange } from '@tiptap/core';
+import { PropertyPlaceholderNode } from './helpers/propertyPlaceholderExtension';
+import { I18nPlaceholderNode } from './helpers/i18nPlaceholderExtension';
+import { createI18nPlaceholderShortcutExtension } from './helpers/i18nPlaceholderShortcutExtension';
+import type { I18nPlaceholderToken, PropertyPlaceholderToken } from './types';
 
 export function useRichTextEditor(args: UseRichTextEditorArgs) {
   const { expandedLocal } = setupRichTextEditorExpansion(args);
@@ -40,6 +43,9 @@ export function useRichTextEditor(args: UseRichTextEditorArgs) {
         autolink: true,
         linkOnPaste: true,
       }),
+      I18nPlaceholderNode,
+      createI18nPlaceholderShortcutExtension(args.onOpenI18nModal),
+      PropertyPlaceholderNode,
       TextStyle,
       FontSize,
       Color,
@@ -166,6 +172,31 @@ export function useRichTextEditor(args: UseRichTextEditorArgs) {
     editor.value?.chain().focus().setEmoji(name).run();
   };
 
+  const insertI18nPlaceholder = ({ key, label }: I18nPlaceholderToken) => {
+    if (!key) return;
+    editor.value
+      ?.chain()
+      .focus()
+      .insertI18nPlaceholder(key, label ?? key)
+      .run();
+  };
+
+  const insertPropertyPlaceholders = (tokens: PropertyPlaceholderToken[]) => {
+    if (!tokens.length || !editor.value) return;
+
+    const chain = editor.value.chain().focus();
+    tokens.forEach(({ token, label, propertyId, kind, cast }, index) => {
+      chain.insertPropertyPlaceholder(token, label || formatPropertyPlaceholderLabel(token), {
+        propertyId,
+        kind,
+        cast,
+      });
+      if (index < tokens.length - 1) {
+        chain.setHardBreak();
+      }
+    });
+    chain.run();
+  };
   return {
     editor,
     expandedLocal,
@@ -191,5 +222,7 @@ export function useRichTextEditor(args: UseRichTextEditorArgs) {
     focus,
     insertIcon,
     insertEmoji,
+    insertI18nPlaceholder,
+    insertPropertyPlaceholders,
   };
 }

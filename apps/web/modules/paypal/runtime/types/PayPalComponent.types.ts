@@ -11,6 +11,12 @@ export type PaypalButtonPropsType = {
 
 export type PaypalAPMPropsType = {
   disabled?: boolean;
+  paymentKey: string;
+  order?: Order;
+};
+
+export type PayPalCreditPropsType = {
+  order?: Order;
 };
 
 export type PayPalAddToCartCallback = (successfully: boolean) => void;
@@ -86,11 +92,7 @@ export type ApplePayPaymentContact = {
 export type ApplePayPaymentMethodType = 'debit' | 'credit' | 'prepaid' | 'store';
 
 export type ApplePayPaymentPassActivationState =
-  | 'activated'
-  | 'requiresActivation'
-  | 'activating'
-  | 'suspended'
-  | 'deactivated';
+  'activated' | 'requiresActivation' | 'activating' | 'suspended' | 'deactivated';
 
 export type ApplePayPaymentPass = {
   primaryAccountIdentifier: string;

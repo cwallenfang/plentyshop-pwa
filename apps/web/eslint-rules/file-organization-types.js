@@ -26,7 +26,7 @@ export const fileOrganizationTypes = {
   },
 
   create(context) {
-    const filename = context.getFilename();
+    const filename = context.filename;
     const isDeclarationFile = filename.endsWith('.d.ts');
     const isTestFile = filename.includes('/__tests__/') || filename.includes('\\__tests__\\');
     const isTypeFile =
@@ -75,6 +75,10 @@ export const fileOrganizationTypes = {
       // Flag all interfaces outside types.ts
       TSInterfaceDeclaration(node) {
         if (!isTypeFile && !isDeclarationFile && !isTestFile) {
+          // Allow interfaces inside `declare module` augmentation blocks
+          if (node.parent && node.parent.type === 'TSModuleBlock') {
+            return;
+          }
           context.report({
             node,
             messageId: 'typeInWrongFile',

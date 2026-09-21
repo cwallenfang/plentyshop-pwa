@@ -3,6 +3,14 @@ enum AnalyticsEventName {
   tocCreateBlock = 'tocCreateBlock',
   contentCreateBlock = 'contentCreateBlock',
   headerContainerEditBlock = 'headerContainerEditBlock',
+  addItemToBasket = 'addItemToBasket',
+  openingCheckout = 'openingCheckout',
+  paypalExpressFlow = 'paypalExpressFlow',
+  guestLoginPage = 'guestLoginPage',
+  aiGenerateDraft = 'aiGenerateDraft',
+  aiKeepDraft = 'aiKeepDraft',
+  aiDiscardDraft = 'aiDiscardDraft',
+  snapshotRestore = 'snapshotRestore',
 }
 
 export const useLogEvent = () => {
@@ -42,10 +50,90 @@ export const useLogEvent = () => {
     });
   };
 
+  const logAddItemToBasket = () => {
+    usePlentyLogs({
+      name: AnalyticsEventName.addItemToBasket,
+      loggableId: '',
+      loggableType: '',
+      payload: {},
+    });
+  };
+
+  const logOpeningCheckout = () => {
+    usePlentyLogs({
+      name: AnalyticsEventName.openingCheckout,
+      loggableType: '',
+      loggableId: '',
+      payload: {},
+    });
+  };
+
+  const logPayPalExpressFlow = () => {
+    usePlentyLogs({
+      name: AnalyticsEventName.paypalExpressFlow,
+      loggableType: '',
+      loggableId: '',
+      payload: {},
+    });
+  };
+
+  const logOpenGuestLoginPage = () => {
+    usePlentyLogs({
+      name: AnalyticsEventName.guestLoginPage,
+      loggableType: '',
+      loggableId: '',
+      payload: {},
+    });
+  };
+
+  const logAiGenerateDraft = () => {
+    usePlentyLogs({
+      name: AnalyticsEventName.aiGenerateDraft,
+      loggableType: 'ai',
+      loggableId: '',
+      payload: {},
+    });
+  };
+
+  const logAiKeepDraft = () => {
+    usePlentyLogs({
+      name: AnalyticsEventName.aiKeepDraft,
+      loggableType: 'ai',
+      loggableId: '',
+      payload: {},
+    });
+  };
+
+  const logAiDiscardDraft = () => {
+    usePlentyLogs({
+      name: AnalyticsEventName.aiDiscardDraft,
+      loggableType: 'ai',
+      loggableId: '',
+      payload: {},
+    });
+  };
+
+  const logSnapshotRestore = () => {
+    usePlentyLogs({
+      name: AnalyticsEventName.snapshotRestore,
+      loggableType: 'snapshot',
+      loggableId: '',
+      payload: {},
+    });
+  };
+
   return {
     logToCOpened,
     logToCCreateBlock,
     logContentCreateBlock,
     logHeaderContainerEditBlock,
+    logAddItemToBasket,
+    logOpeningCheckout,
+    logPayPalExpressFlow,
+    logOpenGuestLoginPage,
+    logAiGenerateDraft,
+    logAiKeepDraft,
+    logAiDiscardDraft,
+    logSnapshotRestore,
   };
 };

@@ -10,7 +10,7 @@
 
     <component
       :is="SiteConfigurationDrawer"
-      v-if="siteConfigurationDrawerOpen"
+      v-if="siteConfigurationDrawerOpen && clientPreview"
       class="flex-shrink-0 bg-white font-editor border-r border-gray-300 overflow-visible"
     />
 
@@ -32,6 +32,7 @@
       <VitePwaManifest />
       <NuxtLoadingIndicator color="repeating-linear-gradient(to right, #008ebd 0%,#80dfff 50%,#e0f7ff 100%)" />
       <div
+        id="app-container"
         ref="previewContainerEl"
         :style="
           isMobilePreview
@@ -44,8 +45,9 @@
                 display: 'flex',
                 flexDirection: 'column',
                 '--viewport-height': '90dvh',
+                isolation: 'isolate',
               }
-            : undefined
+            : { isolation: 'isolate' }
         "
         :class="isMobilePreview ? 'mx-auto bg-white my-auto shadow-md @container' : '@container'"
         data-testid="editor-preview-container"
@@ -67,7 +69,13 @@
 
     <component
       :is="BlocksConfigurationDrawer"
-      v-if="blocksConfigurationDrawerOpen"
+      v-if="blocksConfigurationDrawerOpen && clientPreview"
+      class="flex-shrink-0 bg-white font-editor border-l border-gray-300 overflow-y-auto"
+    />
+
+    <component
+      :is="VersionHistoryDrawer"
+      v-if="drawerOpen && clientPreview"
       class="flex-shrink-0 bg-white font-editor border-l border-gray-300 overflow-y-auto"
     />
   </div>
@@ -75,23 +83,23 @@
     <component :is="PageModal" v-if="clientPreview" />
     <component :is="UnlinkCategoryModal" v-if="clientPreview" />
     <component :is="ResetProductPageModal" v-if="clientPreview" />
-    <component :is="AddBlockPopoverComponent" v-if="enablePopover && clientPreview" />
+    <component :is="AddBlockPopoverComponent" v-if="clientPreview" />
+    <component :is="RestoreSnapshotModal" v-if="clientPreview" />
   </ClientOnly>
 </template>
 
 <script setup lang="ts">
 import { useMediaQuery } from '@vueuse/core';
-import { isCssUrl, isJsUrl } from '~/utils/assets';
 import { categoryGetters } from '@plentymarkets/shop-api';
 
 const bodyClass = ref('');
 const route = useRoute();
 const { disableActions } = useEditor();
 const { siteConfigurationDrawerOpen, blocksConfigurationDrawerOpen, currentFont } = useSiteConfiguration();
+const { drawerOpen, entityKey, resetForCurrentEntity } = useBlockSnapshots();
+const { resetHistory } = useBlockHistory();
 const { setStaticPageMeta } = useUrlPageMeta();
 const { isInEditorClient, isMobilePreview, previewWidth } = useEditorState();
-
-const enablePopover = useRuntimeConfig().public.enableAddBlockPopover;
 
 const isLargeScreen = useMediaQuery('(min-width: 1024px)');
 const clientPreview = computed(() => isInEditorClient.value && isLargeScreen.value);
@@ -107,7 +115,7 @@ const { getSetting: getMetaDescription } = useSiteSettings('metaDescription');
 const { getSetting: getMetaKeywords } = useSiteSettings('metaKeywords');
 const { getSetting: getRobots } = useSiteSettings('robots');
 const { getSetting: getPrimaryColor } = useSiteSettings('primaryColor');
-const { getSetting: customAssetsSafeMode } = useSiteSettings('customAssetsSafeMode');
+const { getBooleanSetting: customAssetsSafeMode } = useSiteSettings('customAssetsSafeMode');
 
 const { data: productsCatalog } = useProducts();
 
@@ -202,31 +210,38 @@ useSeoMeta({
   ogImage: () => ogImage.value,
   ogDescription: () => ogDescription.value,
   description: () => description.value,
-  keywords: () => keywords.value,
   robots: () => robots.value,
   themeColor: () => themeColor.value,
   generator: 'plentymarkets',
 });
 
+const localeHead = useLocaleHead();
+
 useHead({
+  htmlAttrs: {
+    lang: () => localeHead.value.htmlAttrs.lang,
+    dir: () => localeHead.value.htmlAttrs.dir as 'ltr' | 'rtl' | 'auto' | undefined,
+  },
   link: () => [
     { rel: 'icon', href: fav.value },
     { rel: 'apple-touch-icon', href: fav.value },
     ...cssExternalAssets.value.map((asset, index) => ({
       key: `external-css-${asset.uuid ?? index}`,
-      rel: 'stylesheet',
+      rel: 'stylesheet' as const,
       media: asset.isActive ? 'all' : 'not all',
       href: asset.content,
     })),
   ],
-  meta: () =>
-    metaAssets.value
+  meta: () => [
+    { name: 'keywords', content: keywords.value },
+    ...metaAssets.value
       .filter((asset) => asset.name && asset.content)
       .map((asset) => ({
         key: `custom-meta-${asset.uuid}`,
         name: asset.name,
         content: asset.content,
       })),
+  ],
   style: () =>
     cssAssets.value.map((asset) => ({
       key: `custom-css-${asset.uuid}-o${asset.order ?? 0}`,
@@ -262,6 +277,16 @@ if (import.meta.client) {
       if (clientPreview.value) contentRef.value?.scrollTo({ top: 0 });
     },
   );
+
+  watch(entityKey, () => {
+    if (drawerOpen.value) {
+      resetForCurrentEntity();
+    }
+  });
+
+  watch(entityKey, () => {
+    resetHistory();
+  });
 }
 
 if (route?.meta.pageType === 'static') setStaticPageMeta();
@@ -288,6 +313,12 @@ const ResetProductPageModal = defineAsyncComponent(
   () => import('~/components/ui/ResetProductPageModal/ResetProductPageModal.vue'),
 );
 const AddBlockPopoverComponent = defineAsyncComponent(() => import('~/components/AddBlockPopover/AddBlockPopover.vue'));
+const VersionHistoryDrawer = defineAsyncComponent(
+  () => import('~/components/VersionHistoryDrawer/VersionHistoryDrawer.vue'),
+);
+const RestoreSnapshotModal = defineAsyncComponent(
+  () => import('~/components/ui/RestoreSnapshotModal/RestoreSnapshotModal.vue'),
+);
 </script>
 
 <style lang="scss">
