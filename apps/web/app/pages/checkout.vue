@@ -52,8 +52,8 @@
             <ClientOnly>
               <PaymentButtons />
             </ClientOnly>
-            <ModuleComponentRendering area="checkout.afterBuyButton" />
             <GuaranteeNotice v-if="showGuaranteeNotice" />
+            <ModuleComponentRendering area="checkout.afterBuyButton" />
           </OrderSummary>
           <div class="mt-2">
             <CheckoutGeneralTerms />
