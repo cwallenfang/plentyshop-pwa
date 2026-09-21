@@ -1,5 +1,5 @@
 <template>
-  <div v-if="showSetting" class="flex justify-between items-center mb-2">
+  <div class="flex justify-between items-center mb-2">
     <UiFormLabel>{{ getEditorTranslation('label') }}</UiFormLabel>
     <SfSwitch
       v-model="showGuaranteeNotice"
@@ -11,7 +11,6 @@
 import { SfSwitch } from '@storefront-ui/vue';
 
 const { updateSetting, getBooleanSetting } = useSiteSettings('showGuaranteeNotice');
-const showSetting = useFeatureFlag('shopPwaEnableEu2025-1960', false);
 
 const showGuaranteeNotice = computed({
   get: () => getBooleanSetting(true),
