@@ -63,6 +63,7 @@ const createConfiguration = (extraFields: Partial<PriceCardContent> = {}): Price
     tags: false,
     availability: false,
     starRating: false,
+    bulletPoints: false,
     variationProperties: false,
     orderProperties: false,
     previewText: false,

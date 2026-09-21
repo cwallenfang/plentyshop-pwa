@@ -158,7 +158,7 @@ export default defineNuxtConfig({
     'nuxt-lazy-hydrate',
     'nuxt-viewport',
     '@vee-validate/nuxt',
-    '@vite-pwa/nuxt',
+    ...(isTestRuntime ? [] : ['@vite-pwa/nuxt']),
     'nuxt-color-picker',
   ],
   plentySitemap: {

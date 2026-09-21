@@ -9,7 +9,11 @@
     >
       -{{ discountPercent }}%
     </span>
-    <span class="mr-2 text-secondary-500 font-bold" :class="props.size === 'sm' ? 'typography-text-sm @sm:typography-text-lg' : 'text-2xl'" :data-testid="props.testId">
+    <span
+      class="mr-2 text-secondary-500 font-bold"
+      :class="props.size === 'sm' ? 'typography-text-sm @sm:typography-text-lg' : 'text-2xl'"
+      :data-testid="props.testId"
+    >
       <span>{{ format(price) }}</span>
       <span v-if="props.displayVatHint">{{ t('common.labels.asterisk') }}</span>
     </span>

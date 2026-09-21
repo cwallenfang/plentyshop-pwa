@@ -1,3 +1,22 @@
+const createFourColumnTemplate = () => ({
+  name: 'MultiGrid',
+  type: 'structure',
+  meta: { uuid: '980cac0b-5872-46ba-a17f-99fa471c3e8f' },
+  configuration: { columnWidths: [3, 3, 3, 3], fullWidth: false },
+  content: [
+    'a4ef08f7-8b7e-4ce3-b13d-1adb098ea92e',
+    '4f6f8275-8ffb-4a3d-a1ce-370794bed12d',
+    '4a98659c-7787-4cec-97ae-90a0fb1065e3',
+    '0c7ed38e-ef87-4834-9635-62d8a5a811f5',
+  ].map((uuid, parent_slot) => ({
+    name: 'EmptyGridBlock',
+    type: 'content',
+    meta: { uuid },
+    parent_slot,
+    content: [],
+  })),
+});
+
 const blocksList = {
   layout: {
     category: 'layout',
@@ -5,119 +24,10 @@ const blocksList = {
     title: 'Layout',
     blockName: 'MultiGrid',
     variations: [
-{
-  "template": {
-    "de": {
-      "configuration": {
-        "columnWidths": [
-          3,
-          3,
-          3,
-          3
-        ],
-        "fullWidth": false
+      {
+        title: 'MultiGrid 3-3-3-3',
+        template: { de: createFourColumnTemplate(), en: createFourColumnTemplate() },
       },
-      "content": [
-        {
-          "content": [],
-          "meta": {
-            "uuid": "a4ef08f7-8b7e-4ce3-b13d-1adb098ea92e"
-          },
-          "name": "EmptyGridBlock",
-          "parent_slot": 0,
-          "type": "content"
-        },
-        {
-          "content": [],
-          "meta": {
-            "uuid": "4f6f8275-8ffb-4a3d-a1ce-370794bed12d"
-          },
-          "name": "EmptyGridBlock",
-          "parent_slot": 1,
-          "type": "content"
-        },
-        {
-          "content": [],
-          "meta": {
-            "uuid": "4a98659c-7787-4cec-97ae-90a0fb1065e3"
-          },
-          "name": "EmptyGridBlock",
-          "parent_slot": 2,
-          "type": "content"
-        },
-        {
-          "content": [],
-          "meta": {
-            "uuid": "0c7ed38e-ef87-4834-9635-62d8a5a811f5"
-          },
-          "name": "EmptyGridBlock",
-          "parent_slot": 3,
-          "type": "content"
-        }
-      ],
-      "meta": {
-        "uuid": "980cac0b-5872-46ba-a17f-99fa471c3e8f"
-      },
-      "name": "MultiGrid",
-      "type": "structure"
-    },
-    "en": {
-      "configuration": {
-        "columnWidths": [
-          3,
-          3,
-          3,
-          3
-        ],
-        "fullWidth": false
-      },
-      "content": [
-        {
-          "content": [],
-          "meta": {
-            "uuid": "a4ef08f7-8b7e-4ce3-b13d-1adb098ea92e"
-          },
-          "name": "EmptyGridBlock",
-          "parent_slot": 0,
-          "type": "content"
-        },
-        {
-          "content": [],
-          "meta": {
-            "uuid": "4f6f8275-8ffb-4a3d-a1ce-370794bed12d"
-          },
-          "name": "EmptyGridBlock",
-          "parent_slot": 1,
-          "type": "content"
-        },
-        {
-          "content": [],
-          "meta": {
-            "uuid": "4a98659c-7787-4cec-97ae-90a0fb1065e3"
-          },
-          "name": "EmptyGridBlock",
-          "parent_slot": 2,
-          "type": "content"
-        },
-        {
-          "content": [],
-          "meta": {
-            "uuid": "0c7ed38e-ef87-4834-9635-62d8a5a811f5"
-          },
-          "name": "EmptyGridBlock",
-          "parent_slot": 3,
-          "type": "content"
-        }
-      ],
-      "meta": {
-        "uuid": "980cac0b-5872-46ba-a17f-99fa471c3e8f"
-      },
-      "name": "MultiGrid",
-      "type": "structure"
-    }
-  },
-  "title": "MultiGrid 3-3-3-3"
-},
       {
         title: 'MultiGrid 6-6',
         template: {
