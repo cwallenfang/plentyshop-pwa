@@ -182,6 +182,9 @@ export default defineNuxtConfig({
     ],
   },
   shopCore: {
+    featureFlags: {
+      'shopPwaEnableEu2025-1960': true,
+    },
     apiUrl: validateApiUrl(process.env.API_URL) ?? 'http://localhost:8181',
     apiEndpoint: process.env.API_ENDPOINT,
     configId: Number(process.env.CONFIG_ID) || 1,
