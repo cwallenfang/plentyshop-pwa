@@ -48,5 +48,8 @@ const manufacturer = computed(() => {
   const manufacturer = productGetters.getManufacturer(props.product);
   return manufacturer?.externalName ?? null;
 });
-const model = computed(() => props.product.variation?.model);
+const model = computed(() => {
+  const variation = props.product.variation;
+  return variation?.externalId?.trim() || variation?.number?.trim() || '';
+});
 </script>
