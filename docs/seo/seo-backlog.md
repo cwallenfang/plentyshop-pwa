@@ -1,9 +1,11 @@
 # SEO Backlog fuer etc-shop.de
 
 ## Kontext
+
 Diese Ticketliste basiert auf dem Dokument "Technisches Pflichtenheft fuer etc-shop.de - SEO-Standards" und der technischen Analyse des aktuellen Projekts.
 
 ## Priorisierte Reihenfolge
+
 1. SEO-001: Kategorie Canonical und hreflang korrigieren
 2. SEO-002: Crawlbare Pagination mit echten Links
 3. SEO-003: Breadcrumb JSON-LD aus echten Breadcrumb-Daten
@@ -15,6 +17,7 @@ Diese Ticketliste basiert auf dem Dokument "Technisches Pflichtenheft fuer etc-s
 9. SEO-009: SEO QA, Monitoring und Regression Checks
 
 ## Dateien
+
 - `docs/seo/tickets/SEO-001-kategorie-canonical-hreflang.md`
 - `docs/seo/tickets/SEO-002-pagination-crawlbare-links.md`
 - `docs/seo/tickets/SEO-003-breadcrumb-jsonld.md`
@@ -27,11 +30,13 @@ Diese Ticketliste basiert auf dem Dokument "Technisches Pflichtenheft fuer etc-s
 - `docs/seo/nicht-im-frontend-loesbar.md`
 
 ## Aufwand (Grob)
+
 - Sprint 1: SEO-001 bis SEO-003
 - Sprint 2: SEO-004 bis SEO-006
 - Sprint 3: SEO-007 bis SEO-009
 
 ## Definition of Done (global)
+
 - Anforderungen aus Ticket-Akzeptanzkriterien sind erfuellt.
 - SSR-HTML, Statuscodes, Canonicals, hreflang und strukturierte Daten wurden in Render-Tests geprueft.
 - Keine SEO-Regression in vorhandenen Flows.

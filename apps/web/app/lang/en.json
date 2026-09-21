@@ -337,7 +337,8 @@
     "googlePay": {
       "paymentInProgress": "Payment in progress..."
     },
-    "guaranteeNotice": "Your legal guarantee rights"
+    "guaranteeNotice": "Your legal guarantee rights",
+    "termsInfoInstant": "Please take note of our {terms}, {cancellationRights}, and {privacyPolicy}."
   },
   "guaranteeLabels": {
     "area": {
@@ -1082,7 +1083,8 @@
       "notValidVariation": "Please select a valid variation.",
       "productNameMissing": "Item name missing",
       "seeAvailableOptions": "See available options"
-    }
+    },
+    "rrp": "RRP"
   },
   "quickCheckout": {
     "cartContains": "Your cart contains {count} item | Your cart contains {count} items",
@@ -1188,7 +1190,6 @@
       "showDataPrivacyAgreementHint": "I agree that my email address and my phone number will be transmitted to {parcelServiceInformation}, so that they can contact me via email or phone in order to determine a delivery date or to communicate status information about the delivery of the shipment. I can revoke this agreement at any time."
     }
   },
-  "rrp": "RRP",
   "sortingAndPagination": {
     "recommendedSorting": {
       "description": "You can decide how the \"Recommended\" option is composed. Select three sorting options. The first sorting option takes the highest priority, the second option the second highest, etc.",
@@ -1321,7 +1322,6 @@
     },
     "unknownError": "An unknown error has occurred."
   },
-  "termsInfoInstant": "Please take note of our {terms}, {cancellationRights}, and {privacyPolicy}.",
   "defaultTemplate": {
     "category": {
       "categoryData": {

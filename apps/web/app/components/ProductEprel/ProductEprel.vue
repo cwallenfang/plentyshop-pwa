@@ -1,9 +1,9 @@
 <template>
   <template v-if="showArrow">
     <div data-testid="producteprel" class="flex items-center gap-2 absolute top-0 right-0" style="z-index: 1">
-      <SfButton v-if="showArrow" :size="'sm'" variant="tertiary" class="hover:bg-transparent" @click="open">
+      <UiButton v-if="showArrow" :size="'sm'" variant="tertiary" class="hover:bg-transparent" @click="open">
         <ArrowSvg :level="eprelValue" :size="size" class="transition-transform duration-200" />
-      </SfButton>
+      </UiButton>
     </div>
     <div class="flex items-center gap-2 absolute top-0 right-0" style="z-index: 2">
       <transition
@@ -26,7 +26,7 @@
       >
         <SfModal
           v-model="isOpen"
-          class="max-w-[80%] md:max-w-lg content-end my-[21%] lg:my-[10%]"
+          class="max-w-[80%] @md:max-w-lg content-end my-[21%] @lg:my-[10%]"
           tag="section"
           role="dialog"
           aria-labelledby="productEprelTitle"
@@ -42,7 +42,7 @@
             >
               <SfIconClose class="text-neutral-500" />
             </UiButton>
-            <h3 id="productEprelTitle" class="font-bold typography-headline-4 md:typography-headline-3">
+            <h3 id="productEprelTitle" class="font-bold typography-headline-4 @md:typography-headline-3">
               Energiekennzeichnung
             </h3>
           </header>
@@ -59,11 +59,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { productPropertyGetters } from '@plentymarkets/shop-api';
 import ArrowSvg from '~/components/ArrowSvg/ArrowSvg.vue';
 import type { ProductEprelProps } from './types';
-import { SfModal, SfButton, SfIconClose, useDisclosure } from '@storefront-ui/vue';
+import { SfModal, SfIconClose, useDisclosure } from '@storefront-ui/vue';
 
 const { isOpen, open, close } = useDisclosure({ initialValue: false });
 

@@ -25,7 +25,12 @@ const { useEditor } = vi.hoisted(() => ({
 
 mockNuxtImport('useSdk', () => useSdk);
 mockNuxtImport('useAsyncData', () => useAsyncData);
-mockNuxtImport('useState', () => useState);
+mockNuxtImport('useState', async () => {
+  const { ref: vueRef } = await import('vue');
+  // The viewport plugin starts before the per-test state mock is configured.
+  const viewportState = vueRef<string>();
+  return (key: string, ...args: unknown[]) => (key === 'viewportState' ? viewportState : useState(key, ...args));
+});
 mockNuxtImport('useNuxtApp', () => () => proxyNuxtApp((useNuxtApp() ?? {}) as Record<string, unknown>));
 mockNuxtImport('useEditor', () => useEditor);
 

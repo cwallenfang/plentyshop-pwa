@@ -16,12 +16,25 @@ describe('ProductEprel', () => {
     size: 'lg',
   };
 
-  it('renders correctly', () => {
+  it('hides the energy label when the product has no energy class', () => {
     const wrapper = mount(ProductEprel, {
       props: defaultProps,
     });
 
+    expect(wrapper.find('[data-testid="producteprel"]').exists()).toBe(false);
+  });
+
+  it('renders the energy arrow for a product with a valid energy class', () => {
+    const product = {
+      ...fakeProduct,
+      variationProperties: [{ properties: [{ id: 172, values: { value: 'A' } }] }],
+    } as unknown as Product;
+    const wrapper = mount(ProductEprel, {
+      props: { ...defaultProps, product },
+    });
+
     expect(wrapper.find('[data-testid="producteprel"]').exists()).toBe(true);
+    expect(wrapper.find('[data-testid="arrowsvg"]').exists()).toBe(true);
   });
 
   it('accepts props correctly', () => {

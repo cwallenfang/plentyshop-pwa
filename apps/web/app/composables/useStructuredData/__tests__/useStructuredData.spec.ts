@@ -20,7 +20,7 @@ const { useRuntimeConfigMock } = vi.hoisted(() => ({
 }));
 mockNuxtImport('useRuntimeConfig', () => useRuntimeConfigMock);
 
-const routeRef = { fullPath: '/search?term=test', path: '/search' };
+const routeRef = { fullPath: '/search?term=test', path: '/search', meta: {} };
 const { useRouteMock } = vi.hoisted(() => ({ useRouteMock: vi.fn(() => routeRef) }));
 mockNuxtImport('useRoute', () => useRouteMock);
 

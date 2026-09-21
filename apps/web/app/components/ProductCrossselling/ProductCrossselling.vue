@@ -9,7 +9,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { productGetters } from '@plentymarkets/shop-api';
 import { SfLoaderCircular } from '@storefront-ui/vue';
 

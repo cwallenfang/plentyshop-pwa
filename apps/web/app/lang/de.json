@@ -337,7 +337,8 @@
     "googlePay": {
       "paymentInProgress": "Zahlung in Bearbeitung..."
     },
-    "guaranteeNotice": "Ihre gesetzlichen Gewährleistungsrechte"
+    "guaranteeNotice": "Ihre gesetzlichen Gewährleistungsrechte",
+    "termsInfoInstant": "Bitte nehmen Sie unsere {terms}, {cancellationRights} und {privacyPolicy} zur Kenntnis."
   },
   "guaranteeLabels": {
     "area": {
@@ -1082,7 +1083,8 @@
       "notValidVariation": "Bitte wählen Sie eine gültige Variante.",
       "productNameMissing": "Artikelname fehlt",
       "seeAvailableOptions": "Verfügbare Optionen anzeigen"
-    }
+    },
+    "rrp": "UVP"
   },
   "quickCheckout": {
     "cartContains": "Ihr Warenkorb enthält {count} Artikel",
@@ -1188,7 +1190,6 @@
       "showDataPrivacyAgreementHint": "Ich bin damit einverstanden, dass meine E-Mail-Adresse bzw. meine Telefonnummer an {parcelServiceInformation} weitergegeben wird, damit der Paketdienstleister vor der Zustellung der Ware zum Zwecke der Abstimmung eines Liefertermins per E-Mail oder Telefon Kontakt mit mir aufnehmen bzw. Statusinformationen zur Sendungszustellung übermitteln kann. Meine diesbezüglich erteilte Einwilligung kann ich jederzeit widerrufen"
     }
   },
-  "rrp": "UVP",
   "sortingAndPagination": {
     "recommendedSorting": {
       "description": "Du kannst selbst bestimmen, wie sich der Wert \"Empfohlen\" zusammensetzt. Wähle drei Sortierungswerte. Der erste Sortierungswert hat die höchste Priorität bei der Sortierung, der zweite Wert die zweithöchste, usw.",
@@ -1342,7 +1343,6 @@
         "linkText": "EU-Verantwortliche Person - klicken Sie für Details"
       }
     },
-    "termsInfoInstant": "Bitte nehmen Sie unsere {terms}, {cancellationRights} und {privacyPolicy} zur Kenntnis.",
     "homepage": {
       "carousel": {
         "banner1": {

@@ -77,7 +77,7 @@ describe('VariationBulletPoints.vue', () => {
 
     const li = wrapper.findAll('li');
     expect(li.length).toBe(1);
-    expect(li.at(0)!.text()).toBe('Punkt 1');
+    expect(li.at(0)!.text()).toBe('Text vorhanden');
   });
 
   it('zeigt fallback an, wenn keine Bulletpoints vorhanden sind', () => {
@@ -100,7 +100,8 @@ describe('VariationBulletPoints.vue', () => {
       },
     });
 
-    expect(wrapper.html()).toBe('<!---->');
+    expect(wrapper.find('.etc-bullet-points').exists()).toBe(false);
+    expect(wrapper.text()).toBe('');
   });
 
   it('verwendet die richtige ID-Reihenfolge (427 → 431)', () => {

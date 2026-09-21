@@ -1,5 +1,3 @@
-import { ref, computed } from 'vue';
-
 export function useLazyContent() {
   const { categoryTemplateData, fetchCategoryTemplate } = useBlockTemplates();
 

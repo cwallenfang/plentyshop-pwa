@@ -12,7 +12,7 @@
     leave-from-class="opacity-100"
     leave-to-class="opacity-0"
   >
-    <div v-if="open" class="fixed inset-0 bg-neutral-700 bg-opacity-50 z-[1000]" />
+    <div v-if="open" class="fixed inset-0 bg-neutral-700 bg-opacity-50 z-drawer-backdrop" />
   </transition>
 
   <transition
@@ -27,13 +27,13 @@
       ref="productPreviewRef"
       v-model="open"
       :placement="placement"
-      :class="['bg-white', 'border', 'h-[100vh]', 'z-[1000]', 'w-[100vw] md:w-[50vw] lg:w-[20vw]', 'border-gray-300']"
+      :class="['bg-white', 'border', 'h-[100vh]', 'z-drawer', 'w-[100vw] @md:w-[50vw] @lg:w-[20vw]', 'border-gray-300']"
     >
       <header class="flex justify-between items-center p-4 bg-primary-500 text-white mb-5">
         <h3 class="text-lg font-medium">Produktvorschau</h3>
-        <SfButton square variant="tertiary" class="text-white" @click="open = false">
+        <UiButton square variant="tertiary" class="text-white" @click="open = false">
           <SfIconClose />
-        </SfButton>
+        </UiButton>
       </header>
 
       <div class="p-5 px-10 mb-5 overflow-x-auto h-[90vh]">
@@ -45,8 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { SfDrawer, SfButton, SfIconClose, SfIconInfo, useTrapFocus } from '@storefront-ui/vue';
-import { ref } from 'vue';
+import { SfDrawer, SfIconClose, SfIconInfo, useTrapFocus } from '@storefront-ui/vue';
 import type { SfDrawerPlacement } from '@storefront-ui/vue';
 import type { ProductPreviewProps } from './types';
 

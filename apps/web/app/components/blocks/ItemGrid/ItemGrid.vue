@@ -1,9 +1,9 @@
 <template>
   <div class="flex-1">
     <template v-if="content?.showItemCount">
-      <div class="grid md:grid-cols-3 md:gap-4">
+      <div class="grid @md:grid-cols-3 @md:gap-4">
         <div
-          class="flex items-center md:col-span-2 mb-2 md:mb-6"
+          class="flex items-center @md:col-span-2 mb-2 @md:mb-6"
           :class="{
             'justify-end': content?.itemCountPosition === 'right',
             'justify-center': content?.itemCountPosition === 'center',

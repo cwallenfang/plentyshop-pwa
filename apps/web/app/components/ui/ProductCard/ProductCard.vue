@@ -150,7 +150,7 @@
             class="flex flex-col w-full justify-between"
             :class="{
               'flex-col': isFromSlider,
-              'lg:flex-row': !isFromSlider,
+              '@lg:flex-row': !isFromSlider,
             }"
           >
             <UiButton

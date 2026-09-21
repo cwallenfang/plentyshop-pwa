@@ -11,7 +11,7 @@
     leave-from-class="opacity-100"
     leave-to-class="opacity-0"
   >
-    <div v-if="open" class="fixed inset-0 bg-neutral-700 bg-opacity-50 z-10" />
+    <div v-if="open" class="fixed inset-0 bg-neutral-700 bg-opacity-50 z-drawer-backdrop" />
   </transition>
 
   <transition
@@ -26,7 +26,7 @@
       ref="drawerRef"
       v-model="open"
       :placement="placement"
-      :class="'bg-white h-[100vh] z-20 w-[100vw] md:w-[50vw] lg:w-[20vw]'"
+      :class="'bg-white h-[100vh] z-drawer w-[100vw] @md:w-[50vw] @lg:w-[20vw]'"
     >
       <header class="flex justify-between items-center p-4 bg-primary-500 text-white mb-5">
         <h3 class="text-lg font-medium">{{ title }}</h3>
@@ -64,7 +64,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
 import { SfDrawer, SfLoaderCircular, SfIconClose, useTrapFocus } from '@storefront-ui/vue';
 import type { SfDrawerPlacement } from '@storefront-ui/vue';
 import { useLazyContent } from '~/composables/useLazyContent/useLazyContent';

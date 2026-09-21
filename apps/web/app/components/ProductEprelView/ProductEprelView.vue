@@ -15,7 +15,6 @@
 <script setup lang="ts">
 import { SfIconOpenInNew } from '@storefront-ui/vue';
 import type { ProductEprelViewProps } from './types';
-import { computed } from 'vue';
 
 const productEprelViewProps = defineProps<ProductEprelViewProps>();
 

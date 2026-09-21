@@ -11,7 +11,6 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
 import type { BulletPointProps } from './types';
 import type { VariationPropertyGroup, VariationProperty } from '@plentymarkets/shop-api';
 

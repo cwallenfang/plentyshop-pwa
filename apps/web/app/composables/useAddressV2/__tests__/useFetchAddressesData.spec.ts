@@ -31,7 +31,12 @@ mockNuxtImport('useCart', () => useCart);
 mockNuxtImport('useCustomer', () => useCustomer);
 mockNuxtImport('usePrimaryAddress', () => usePrimaryAddress);
 mockNuxtImport('useNuxtApp', () => () => proxyNuxtApp((useNuxtApp() ?? {}) as Record<string, unknown>));
-mockNuxtImport('useState', () => useState);
+mockNuxtImport('useState', async () => {
+  const { ref: vueRef } = await import('vue');
+  // The viewport plugin starts before the per-test state mock is configured.
+  const viewportState = vueRef<string>();
+  return (key: string, ...args: unknown[]) => (key === 'viewportState' ? viewportState : useState(key, ...args));
+});
 
 const setupSdk = (response: unknown) =>
   useSdk.mockReturnValue({

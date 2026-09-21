@@ -147,13 +147,19 @@
           ref="drawerReference"
           v-model="isOpen"
           :placement="placement"
-          class="bg-white overflow-y-auto z-[1000] w-full"
+          class="bg-white overflow-y-auto z-drawer w-full"
           :class="{ 'w-100': placement === 'left' || placement === 'right' }"
         >
           <nav>
             <div class="flex items-center justify-between p-4 border-b border-b-neutral-200 border-b-solid">
               <p class="typography-text-base font-medium">{{ t('common.actions.browseProducts') }}</p>
-              <UiButton variant="tertiary" square :aria-label="t('common.navigation.closeMenu')" class="ml-2" @click="close()">
+              <UiButton
+                variant="tertiary"
+                square
+                :aria-label="t('common.navigation.closeMenu')"
+                class="ml-2"
+                @click="close()"
+              >
                 <SfIconClose class="text-neutral-500" />
               </UiButton>
             </div>
@@ -209,7 +215,8 @@
                 </li>
               </template>
             </ul>
-          </nav> </SfDrawer>
+          </nav>
+        </SfDrawer>
       </transition>
     </template>
   </header>

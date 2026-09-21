@@ -33,9 +33,7 @@ const { setBlocksListContext } = useBlocksList();
 setBlocksListContext('content');
 const runtimeConfig = useRuntimeConfig();
 
-const googleVerification = String(
-  runtimeConfig.public.googleSiteVerification || ''
-);
+const googleVerification = String(runtimeConfig.public.googleSiteVerification || '');
 
 if (googleVerification) {
   useHead({
