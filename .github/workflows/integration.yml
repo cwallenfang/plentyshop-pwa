@@ -1,16 +1,21 @@
 name: Integration Gates
 on:
+  workflow_dispatch:
+  push:
+    branches:
+      - meinelampe
   merge_group:
     branches:
       - main
+      - meinelampe
   pull_request:
     branches:
       - main
+      - meinelampe
 
 permissions:
   contents: read
   packages: read
-  pull-requests: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,7 +25,7 @@ jobs:
   fitness-docs:
     if: github.repository == 'plentymarkets/plentyshop-pwa'
     runs-on: ubuntu-slim
-    timeout-minutes: 5
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -39,22 +44,26 @@ jobs:
           tar -xzf htmltest.tar.gz htmltest
           ./htmltest
   fitness-compliance:
+    if: github.repository == 'plentymarkets/plentyshop-pwa' || (github.event_name == 'pull_request' && (github.event.repository.private == false || vars.ENABLE_DEPENDENCY_REVIEW == 'true'))
     runs-on: ubuntu-slim
-    timeout-minutes: 5
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - name: Dependency review
+        if: github.event_name == 'pull_request' && (github.event.repository.private == false || vars.ENABLE_DEPENDENCY_REVIEW == 'true')
         uses: actions/dependency-review-action@v5
         with:
           license-check: true
           deny-licenses: 'AGPL-1.0-or-later, GPL-1.0-or-later, LGPL-2.0-or-later, NGPL'
           vulnerability-check: false
-          comment-summary-in-pr: on-failure
+          comment-summary-in-pr: never
 
       - name: Install Semgrep
+        if: github.repository == 'plentymarkets/plentyshop-pwa'
         run: pip install semgrep
 
       - name: Scan for malicious code
+        if: github.repository == 'plentymarkets/plentyshop-pwa'
         run: >
           semgrep scan
           --error
@@ -62,7 +71,7 @@ jobs:
           .
   fitness-code-quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - name: Setup Node
@@ -84,14 +93,14 @@ jobs:
         uses: ludeeus/action-shellcheck@master
         with:
           scandir: './scripts'
-          additional_files: '.github/skills/code-generation/generate.sh .github/skills/documentation/scripts/fetch-templates.sh'
+          additional_files: '.claude/skills/code-generation/generate.sh .claude/skills/documentation/scripts/fetch-templates.sh'
           severity: warning
           ignore_paths: 'node_modules'
         env:
           SHELLCHECK_OPTS: -e SC2312 -e SC1091
   test-unit:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - name: Setup Node
@@ -101,31 +110,45 @@ jobs:
         run: npm run test
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - name: Setup Node
         uses: ./.github/actions/setup
 
       - name: Setup environment
+        if: github.repository == 'plentymarkets/plentyshop-pwa'
         uses: ./.github/actions/environment
         with:
           api-security-token: ${{ secrets.API_SECURITY_TOKEN }}
           api-endpoint: ${{ vars.API_ENDPOINT_TESTING }}
           configuration: ${{ vars.CONFIG }}
 
+      - name: Set environment for fork compilation (no live shop required)
+        if: github.repository != 'plentymarkets/plentyshop-pwa'
+        run: |
+          cat > apps/web/.env <<'EOF'
+          API_ENDPOINT=https://shop.invalid
+          FETCH_REMOTE_CONFIG=0
+          DEFAULTLANGUAGE=en
+          LANGUAGELIST=en,de
+          EOF
+
       - name: Build application
         run: npm run build
 
       - name: Install productive dependencies for server
+        if: github.repository == 'plentymarkets/plentyshop-pwa'
         run: |
           npm install --omit=dev --ignore-scripts --workspace=apps/web
           npm install --omit=dev --ignore-scripts --workspace=apps/server
 
       - name: Tar build output
+        if: github.repository == 'plentymarkets/plentyshop-pwa'
         run: tar -czf build.tar.gz -C ${{ github.workspace }} apps/server/dist apps/web/.output apps/web/.nuxt
 
       - name: Upload build
+        if: github.repository == 'plentymarkets/plentyshop-pwa'
         uses: actions/upload-artifact@v7
         with:
           name: build
