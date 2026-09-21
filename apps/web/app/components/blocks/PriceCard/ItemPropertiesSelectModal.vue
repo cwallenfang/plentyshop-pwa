@@ -1,5 +1,5 @@
 <template>
-  <UiOverlay :visible="true">
+  <UiOverlay :visible="true" class="fixed inset-0 z-modal-backdrop bg-black/40">
     <SfModal
       :model-value="true"
       class="!w-[420px] !max-w-[90vw] !max-h-[90vh] !p-0 !rounded-xl !border !border-neutral-200 !shadow-md flex flex-col !bg-white !absolute !top-20 !left-1/2 !-translate-x-1/2 !m-0 !overflow-hidden"
@@ -26,7 +26,12 @@
         </div>
       </div>
       <div class="w-full px-5 py-3 border-b border-neutral-200">
-        <SfInput v-model="searchQuery" :placeholder="getEditorTranslation('search-placeholder')" size="sm">
+        <SfInput
+          id="item-properties-search"
+          v-model="searchQuery"
+          :placeholder="getEditorTranslation('search-placeholder')"
+          size="sm"
+        >
           <template #prefix>
             <SfIconSearch class="text-neutral-400" size="sm" />
           </template>
@@ -169,11 +174,16 @@ import {
   SfIconHelp,
   SfModal,
 } from '@storefront-ui/vue';
-
 const emit = defineEmits<{
-  insert: [tokens: string[]];
+  insert: [tokens: PropertyPlaceholderToken[]];
   close: [];
 }>();
+
+onMounted(() => {
+  nextTick(() => {
+    document.getElementById('item-properties-search')?.focus();
+  });
+});
 
 const {
   loading: isLoading,

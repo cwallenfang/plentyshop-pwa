@@ -7,19 +7,20 @@ import {
   buildProductWithItemId,
   buildProductWithVariationId,
   buildProductWithUrlPath,
+  buildProductWithCanonicalHref,
   buildReviewWithCounts,
 } from './fixtures';
 
 const { mockUseHead } = vi.hoisted(() => ({ mockUseHead: vi.fn() }));
 mockNuxtImport('useHead', () => mockUseHead);
 
-const runtimeConfigRef = { public: { domain: 'https://shop.example.com' } };
+const runtimeConfigRef = { app: { baseURL: '/' }, public: { domain: 'https://shop.example.com' } };
 const { useRuntimeConfigMock } = vi.hoisted(() => ({
   useRuntimeConfigMock: vi.fn(() => runtimeConfigRef),
 }));
 mockNuxtImport('useRuntimeConfig', () => useRuntimeConfigMock);
 
-const routeRef = { fullPath: '/search?term=test' };
+const routeRef = { fullPath: '/search?term=test', path: '/search' };
 const { useRouteMock } = vi.hoisted(() => ({ useRouteMock: vi.fn(() => routeRef) }));
 mockNuxtImport('useRoute', () => useRouteMock);
 
@@ -34,7 +35,7 @@ const { useCallistoMock } = vi.hoisted(() => ({
 }));
 mockNuxtImport('useCallisto', () => useCallistoMock);
 
-const mockProductPrice = { price: ref(10), crossedPrice: ref(0) };
+const mockProductPrice = { price: ref(10), crossedPrice: ref<number | null>(0) };
 const { useProductPrice } = vi.hoisted(() => ({ useProductPrice: vi.fn(() => mockProductPrice) }));
 mockNuxtImport('useProductPrice', () => useProductPrice);
 
@@ -78,6 +79,32 @@ const getCapturedJsonLdRaw = (): string => {
   return '';
 };
 
+const getOffersPriceSpecification = (): Array<Record<string, unknown>> => {
+  const jsonLd = getCapturedJsonLd();
+  const offers = jsonLd['offers'] as Record<string, unknown> | undefined;
+  return (offers?.['priceSpecification'] as Array<Record<string, unknown>>) ?? [];
+};
+
+const isListPrice = (spec: Record<string, unknown>): boolean => spec['priceType'] === 'ListPrice';
+const getListPrice = (specs: Array<Record<string, unknown>>): Record<string, unknown> | undefined =>
+  specs.find(isListPrice);
+
+const getCapturedCanonicalHref = (): string | undefined => {
+  const calls = mockUseHead.mock.calls;
+
+  for (let i = calls.length - 1; i >= 0; i--) {
+    const call = calls[i];
+    if (!call) continue;
+
+    const arg = call[0] as { link?: { rel: string; href: string }[] };
+    const canonicalLink = arg?.link?.find((link) => link.rel === 'canonical');
+
+    if (canonicalLink) return canonicalLink.href;
+  }
+
+  return undefined;
+};
+
 describe('useStructuredData', () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -88,8 +115,63 @@ describe('useStructuredData', () => {
     reviewStateRef.value = {} as Review; // NOSONAR
     reviewAverageStateRef.value = {};
     routeRef.fullPath = '/search?term=test';
+    routeRef.path = '/search';
     runtimeConfigRef.public.domain = 'https://shop.example.com';
     isSingleProductUrlSchemeEnabled.value = false;
+    mockProductPrice.price.value = 10;
+    mockProductPrice.crossedPrice.value = 0;
+  });
+
+  describe('setProductMetaData — priceSpecification (ListPrice)', () => {
+    it('should omit ListPrice when there is no crossed price', () => {
+      mockProductPrice.price.value = 10;
+      mockProductPrice.crossedPrice.value = null;
+
+      const { setProductMetaData } = useStructuredData();
+      setProductMetaData(buildProduct());
+
+      expect(getOffersPriceSpecification().some(isListPrice)).toBe(false);
+    });
+
+    it('should omit ListPrice when the crossed price is not greater than the current price', () => {
+      mockProductPrice.price.value = 10;
+      mockProductPrice.crossedPrice.value = 10;
+
+      const { setProductMetaData } = useStructuredData();
+      setProductMetaData(buildProduct());
+
+      expect(getOffersPriceSpecification().some(isListPrice)).toBe(false);
+    });
+
+    it('should use the RRP currency for ListPrice when there is no special offer', () => {
+      mockProductPrice.price.value = 10;
+      mockProductPrice.crossedPrice.value = 20;
+      vi.spyOn(productGetters, 'getSpecialOffer').mockReturnValue(null);
+      vi.spyOn(productGetters, 'getSpecialPriceCurrency').mockReturnValue('GBP');
+      vi.spyOn(productGetters, 'getRegularPriceCurrency').mockReturnValue('EUR');
+
+      const { setProductMetaData } = useStructuredData();
+      setProductMetaData(buildProduct());
+
+      const listPrice = getListPrice(getOffersPriceSpecification());
+      expect(listPrice?.['price']).toBe(20);
+      expect(listPrice?.['priceCurrency']).toBe('EUR');
+    });
+
+    it('should use the special-offer/default currency for ListPrice when a special offer is active', () => {
+      mockProductPrice.price.value = 10;
+      mockProductPrice.crossedPrice.value = 20;
+      vi.spyOn(productGetters, 'getSpecialOffer').mockReturnValue(5);
+      vi.spyOn(productGetters, 'getSpecialPriceCurrency').mockReturnValue('GBP');
+      vi.spyOn(productGetters, 'getRegularPriceCurrency').mockReturnValue('EUR');
+
+      const { setProductMetaData } = useStructuredData();
+      setProductMetaData(buildProduct());
+
+      const listPrice = getListPrice(getOffersPriceSpecification());
+      expect(listPrice?.['price']).toBe(20);
+      expect(listPrice?.['priceCurrency']).toBe('GBP');
+    });
   });
 
   describe('setProductMetaData — aggregateRating', () => {
@@ -235,6 +317,30 @@ describe('useStructuredData', () => {
       const rawJsonLd = getCapturedJsonLdRaw();
       expect(rawJsonLd).not.toContain('</script>');
       expect(rawJsonLd).toContain(String.raw`\u003C/script>`);
+    });
+  });
+
+  describe('setProductCanonicalMetaData', () => {
+    it('should default the canonical href to the current URL, excluding query parameters, when canonical href is empty', () => {
+      routeRef.fullPath = '/search?term=test';
+      routeRef.path = '/search';
+
+      const { setProductCanonicalMetaData } = useStructuredData();
+      setProductCanonicalMetaData(buildProductWithCanonicalHref(''));
+
+      const canonicalHref = getCapturedCanonicalHref();
+      expect(canonicalHref).toBe('https://shop.example.com/search');
+    });
+
+    it('should default the canonical href to the current URL, excluding query parameters, when canonical is missing', () => {
+      routeRef.fullPath = '/search?term=test';
+      routeRef.path = '/search';
+
+      const { setProductCanonicalMetaData } = useStructuredData();
+      setProductCanonicalMetaData(buildProduct());
+
+      const canonicalHref = getCapturedCanonicalHref();
+      expect(canonicalHref).toBe('https://shop.example.com/search');
     });
   });
 });

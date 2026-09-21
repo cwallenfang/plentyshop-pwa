@@ -14,7 +14,7 @@
     </UiButton>
   </SfTooltip>
 
-  <Teleport v-if="isOpen" to="body">
+  <Teleport v-if="isOpen" to="#app-container">
     <UiModal
       v-model="isOpen"
       data-testid="notify-me-modal"
@@ -137,7 +137,7 @@ const { locale } = useI18n();
 const { getSetting } = useSiteSettings('cloudflareTurnstileApiSiteKey');
 const { send } = useNotification();
 const { loading, subscribe } = useNotifyMe();
-const localePath = useLocalePath();
+const localePath = useLocalizedPath();
 
 const turnstileSiteKey = getSetting() ?? '';
 

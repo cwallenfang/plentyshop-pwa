@@ -1,9 +1,6 @@
 import type { ApiError, Block, GetBlocksResponse } from '@plentymarkets/shop-api';
 import type { UseBlocksState, UseBlocksReturn } from './types';
-import { assembleBlocks, isValidHeaderOrder } from '~/utils/blocks/block-helpers';
-
 declare module '#app' {
-  // eslint-disable-next-line custom-rules/file-organization-types
   interface NuxtApp {
     _settleTimer?: ReturnType<typeof setTimeout> | null;
   }
@@ -168,6 +165,10 @@ export const useBlocks: UseBlocksReturn = () => {
     state.value.data = deepClone(state.value.cleanData);
   };
 
+  const restoreBlocks = (data: GetBlocksResponse) => {
+    state.value.data = deepClone(data);
+  };
+
   const setDefaultTemplate = (blocks: Block[]) => {
     state.value.defaultTemplateData = blocks;
   };
@@ -189,6 +190,7 @@ export const useBlocks: UseBlocksReturn = () => {
     reorderHeaderBlocks,
     reorderFooterBlocks,
     discardChanges,
+    restoreBlocks,
     setDefaultTemplate,
     scheduleCleanDataSync,
     cancelCleanDataSync,

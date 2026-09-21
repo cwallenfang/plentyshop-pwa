@@ -3,16 +3,16 @@
     <EditablePage v-if="config.enableProductEditing" :identifier="'0'" :type="'product'" prevent-blocks-request />
 
     <NarrowContainer v-else>
-      <div class="md:grid gap-x-6 grid-areas-product-page grid-cols-product-page relative">
-        <section class="grid-in-left-top md:h-full xl:max-h-[700px] relative">
+      <div class="@md:grid gap-x-6 grid-areas-product-page grid-cols-product-page relative">
+        <section class="grid-in-left-top @md:h-full @xl:max-h-[700px] relative">
           <ProductEprel :product="product" :size="'xxl'" />
           <Gallery :images="addModernImageExtensionForGallery(productGetters.getGallery(product))" :index="0" />
         </section>
-        <section class="mb-10 grid-in-right md:mb-0">
+        <section class="mb-10 grid-in-right @md:mb-0">
           <UiPurchaseCard v-if="product" :product="product" :review-average="countsProductReviews" />
         </section>
-        <section class="grid-in-left-bottom md:mt-8">
-          <UiDivider class="mt-4 mb-2 md:mt-8" />
+        <section class="grid-in-left-bottom @md:mt-8">
+          <UiDivider class="mt-4 mb-2 @md:mt-8" />
           <NuxtLazyHydrate when-visible>
             <ProductAccordion v-if="product" :product="product" />
           </NuxtLazyHydrate>
@@ -92,17 +92,22 @@ const { setCurrentProduct } = useProducts();
 const { setBlocksListContext } = useBlocksList();
 const { setProductMetaData, setProductRobotsMetaData, setProductCanonicalMetaData } = useStructuredData();
 const { addModernImageExtensionForGallery } = useModernImage();
-const { buildProductLanguagePath } = useLocalization();
+const localePath = useLocalizedPath();
 const { productParams, productId } = createProductParams(route.params);
 const { productForEditor, fetchProduct, setProductMeta, setBreadcrumbs, breadcrumbs } = useProduct(productId);
 const product = productForEditor;
 const { disableActions } = useEditor();
-const { fetchProductReviews, fetchProductAuthenticatedReviews, data: productReviews } = useProductReviews(Number(productId));
+const {
+  fetchProductReviews,
+  fetchProductAuthenticatedReviews,
+  data: productReviews,
+} = useProductReviews(Number(productId));
 const { open, openDrawer } = useProductLegalDetailsDrawer();
 const { setPageMeta } = usePageMeta();
 const { resetNotification } = useEditModeNotification(disableActions);
 const { isAuthorized } = useCustomer();
 const { variationId } = useProductAttributes();
+const { addLastSeen } = useLastSeen();
 let variationWatchHandler: WatchStopHandle | undefined;
 
 definePageMeta({
@@ -151,6 +156,7 @@ setCurrentProduct(productForEditor.value || ({} as Product));
 setProductMeta();
 setBlocksListContext('product');
 setBreadcrumbs();
+addLastSeen(product.value);
 
 async function fetchReviews() {
   const productVariationId = productGetters.getVariationId(product.value);
@@ -178,9 +184,7 @@ watch(
   (value, oldValue) => {
     if (value !== oldValue) {
       navigateTo({
-        path: buildProductLanguagePath(
-          `/${productGetters.getUrlPath(product.value)}_${productGetters.getItemId(product.value)}`,
-        ),
+        path: localePath(`/${productGetters.getUrlPath(product.value)}_${productGetters.getItemId(product.value)}`),
         query: route.query,
         replace: true,
       });
